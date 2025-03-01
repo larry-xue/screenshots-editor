@@ -84,6 +84,7 @@ export default function EditorPage() {
     handleMouseUp, 
     resetImagePosition,
     updateImagePosition,
+    updateImageScale,
     initializePositions
   } = useDraggableImages(selectedImageIndex);
   
@@ -216,7 +217,10 @@ export default function EditorPage() {
             style={{
               height: "calc(100vh - 64px)", // 减去头部高度
               position: "relative",
-              overflow: "hidden"
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
             }}
           >
             {/* 编辑器画布 */}
@@ -281,6 +285,7 @@ export default function EditorPage() {
                 onTransform3dChange={setTransform3d}
                 onPositionChange={updateImagePosition}
                 onResetPosition={resetImagePosition}
+                onScaleChange={updateImageScale}
               />
             </TabsContent>
             

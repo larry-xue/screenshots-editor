@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { RotateCw, MoveHorizontal } from "lucide-react";
+import { RotateCw, MoveHorizontal, ZoomIn } from "lucide-react";
 import { getPositionValue } from './utils';
 
 interface TransformControlsProps {
@@ -13,10 +13,11 @@ interface TransformControlsProps {
     rotateZ: number;
     perspective: number;
   };
-  imagePositions: {x: number, y: number}[];
+  imagePositions: {x: number, y: number, scale?: number}[];
   onTransform3dChange: (transform: any) => void;
   onPositionChange: (index: number, axis: 'x' | 'y', value: number) => void;
   onResetPosition: (index: number) => void;
+  onScaleChange?: (index: number, scale: number) => void;
 }
 
 const TransformControls: React.FC<TransformControlsProps> = ({
@@ -25,7 +26,8 @@ const TransformControls: React.FC<TransformControlsProps> = ({
   imagePositions,
   onTransform3dChange,
   onPositionChange,
-  onResetPosition
+  onResetPosition,
+  onScaleChange
 }) => {
   if (selectedImageIndex === null) {
     return (
@@ -36,6 +38,9 @@ const TransformControls: React.FC<TransformControlsProps> = ({
       </div>
     );
   }
+
+  // 获取当前选中图片的缩放值
+  const currentScale = imagePositions[selectedImageIndex]?.scale || 1;
 
   return (
     <div className="p-4 space-y-6">
@@ -96,6 +101,65 @@ const TransformControls: React.FC<TransformControlsProps> = ({
           <MoveHorizontal className="h-4 w-4 mr-2" />
           Reset Position
         </Button>
+      </div>
+      
+      {/* 图片缩放控制 */}
+      <div className="space-y-4">
+        <h3 className="font-medium">Scale</h3>
+        <div>
+          <div className="flex justify-between">
+            <Label>Image Scale</Label>
+            <span className="text-xs text-muted-foreground">{(currentScale * 100).toFixed(0)}%</span>
+          </div>
+          <Slider
+            value={[currentScale]}
+            min={0.2}
+            max={3}
+            step={0.01}
+            onValueChange={(value) => {
+              if (selectedImageIndex !== null && onScaleChange) {
+                onScaleChange(selectedImageIndex, value[0]);
+              }
+            }}
+            className="mt-1.5"
+          />
+          <div className="flex justify-between mt-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (selectedImageIndex !== null && onScaleChange) {
+                  onScaleChange(selectedImageIndex, Math.max(0.2, currentScale - 0.1));
+                }
+              }}
+            >
+              -
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (selectedImageIndex !== null && onScaleChange) {
+                  onScaleChange(selectedImageIndex, 1); // 重置为100%
+                }
+              }}
+            >
+              <ZoomIn className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (selectedImageIndex !== null && onScaleChange) {
+                  onScaleChange(selectedImageIndex, Math.min(3, currentScale + 0.1));
+                }
+              }}
+            >
+              +
+            </Button>
+          </div>
+        </div>
       </div>
       
       <div className="space-y-4">

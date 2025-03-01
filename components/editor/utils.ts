@@ -47,7 +47,7 @@ export const getBorderStyle = (border: {
 export const getTransformStyle = (
   selectedImageIndex: number | null,
   index: number,
-  imagePositions: {x: number, y: number}[],
+  imagePositions: {x: number, y: number, scale?: number}[],
   transform3d: {
     rotateX: number;
     rotateY: number;
@@ -56,20 +56,33 @@ export const getTransformStyle = (
   },
   isDragging: boolean
 ) => {
+  // 获取位置信息
+  const position = imagePositions[index] || { x: 0, y: 0, scale: 1 };
+  // 获取缩放值，如果不存在则默认为1
+  const scale = position.scale || 1;
+  
+  // 基础3D变换样式
+  const transform3dStyle = `
+    perspective(${transform3d.perspective}px)
+    rotateX(${transform3d.rotateX}deg)
+    rotateY(${transform3d.rotateY}deg)
+    rotateZ(${transform3d.rotateZ}deg)
+    scale(${scale})
+  `;
+  
   if (selectedImageIndex === index) {
-    const position = imagePositions[index] || { x: 0, y: 0 };
+    // 选中状态：应用3D变换 + 位置变换
     return {
-      transform: `
-        perspective(${transform3d.perspective}px)
-        rotateX(${transform3d.rotateX}deg)
-        rotateY(${transform3d.rotateY}deg)
-        rotateZ(${transform3d.rotateZ}deg)
-        translate(${position.x}px, ${position.y}px)
-      `,
+      transform: `${transform3dStyle} translate(${position.x}px, ${position.y}px)`,
       transition: isDragging ? 'none' : 'transform 0.3s ease',
     };
+  } else {
+    // 非选中状态：只应用3D变换
+    return {
+      transform: transform3dStyle,
+      transition: 'transform 0.3s ease',
+    };
   }
-  return {};
 };
 
 // 位置相关工具函数

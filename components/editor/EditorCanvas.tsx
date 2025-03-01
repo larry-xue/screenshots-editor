@@ -74,20 +74,24 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(({
       style={{
         maxWidth: "100%",
         maxHeight: "100%",
-        width: showScrollbars ? "calc(100% - 20px)" : "100%", // 留出滚动条空间
-        height: showScrollbars ? "calc(100% - 20px)" : "100%", // 留出滚动条空间
+        width: "100%", // 始终填满可用空间
+        height: "100%", // 始终填满可用空间
         margin: "auto",
       }}
     >
       <div 
         className="canvas-content-wrapper"
         style={{
-          minWidth: showScrollbars ? `${Math.max(100, zoom * 100)}%` : "100%",
-          minHeight: showScrollbars ? `${Math.max(100, zoom * 100)}%` : "100%",
+          minWidth: "100%", // 始终填满容器宽度
+          minHeight: "100%", // 始终填满容器高度
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: showScrollbars ? "40px" : "0",
+          padding: "0", // 移除内边距
+          height: "100%", // 确保高度填满容器
+          width: "100%", // 确保宽度填满容器
+          position: "relative", // 添加相对定位
+          overflow: "hidden", // 防止内容溢出
         }}
       >
         <div 
@@ -97,11 +101,19 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(({
             backgroundColor: background,
             padding: `${padding}px`,
             borderRadius: "12px",
-            transform: `scale(${zoom})`,
             transformOrigin: 'center center',
             transition: 'transform 0.2s cubic-bezier(0.33, 1, 0.68, 1)',
             willChange: 'transform',
             boxShadow: showScrollbars ? "0 0 20px rgba(0,0,0,0.1)" : "none",
+            margin: "auto", // 确保居中
+            position: "absolute", // 使用绝对定位
+            left: "50%", // 水平居中
+            top: "50%", // 垂直居中
+            transform: `translate(-50%, -50%) scale(${zoom})`, // 居中并缩放
+            width: "calc(100% - 40px)", // 宽度铺满，留出20px的边距
+            height: "calc(100% - 40px)", // 高度铺满，留出20px的边距
+            maxWidth: "100%",
+            maxHeight: "100%",
           }}
         >
           <div 
@@ -113,7 +125,7 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(({
             style={{ gap: `${gap}px` }}
           >
             {images.length === 0 ? (
-              <div className="flex items-center justify-center border border-dashed rounded-lg p-8 min-h-[300px] min-w-[500px] text-muted-foreground">
+              <div className="flex items-center justify-center border border-dashed rounded-lg p-8 min-h-[200px] min-w-[300px] text-muted-foreground">
                 <div className="text-center">
                   <Plus className="h-8 w-8 mx-auto mb-2" />
                   <p>Add screenshots to get started</p>
@@ -128,28 +140,23 @@ const EditorCanvas = forwardRef<HTMLDivElement, EditorCanvasProps>(({
               </div>
             ) : (
               images.map((image, index) => (
-                <div 
+                <img 
                   key={index}
+                  src={image} 
+                  alt={`Screenshot ${index + 1}`}
                   className={cn(
-                    "relative overflow-hidden will-change-transform",
-                    selectedImageIndex === index && "ring-2 ring-primary",
-                    selectedImageIndex === index && "cursor-move"
+                    "w-full h-full object-cover will-change-transform",
+                    selectedImageIndex === index && "ring-2 ring-primary cursor-move"
                   )}
-                  style={selectedImageIndex === index ? {
-                    ...getBorderStyle(border),
-                    ...getShadowStyle(shadow),
-                  } : {}}
+                  style={{
+                    ...getTransformStyle(selectedImageIndex, index, imagePositions, transform3d, isDragging),
+                    ...(selectedImageIndex === index ? getBorderStyle(border) : {}),
+                    ...(selectedImageIndex === index ? getShadowStyle(shadow) : {})
+                  }}
                   onClick={() => onSelectImage(index)}
                   onMouseDown={(e) => onMouseDown(e, index)}
-                >
-                  <img 
-                    src={image} 
-                    alt={`Screenshot ${index + 1}`}
-                    className="w-full h-full object-contain will-change-transform"
-                    style={getTransformStyle(selectedImageIndex, index, imagePositions, transform3d, isDragging)}
-                    draggable={false}
-                  />
-                </div>
+                  draggable={false}
+                />
               ))
             )}
           </div>
