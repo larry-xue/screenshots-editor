@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 33% 98%;
+    --foreground: 158 42% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 158 42% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 158 42% 18%;
+    --primary: 142 72% 29%;
+    --primary-foreground: 60 33% 98%;
+    --secondary: 54 95% 56%;
+    --secondary-foreground: 158 42% 18%;
+    --muted: 60 33% 96%;
+    --muted-foreground: 158 30% 35%;
+    --accent: 54 95% 56%;
+    --accent-foreground: 158 42% 18%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 60 33% 98%;
+    --border: 142 30% 92%;
+    --input: 142 30% 92%;
+    --ring: 142 72% 29%;
+    --chart-1: 142 72% 29%;
+    --chart-2: 54 95% 56%;
+    --chart-3: 168 83% 32%;
+    --chart-4: 36 100% 50%;
+    --chart-5: 84 81% 44%;
+    --radius: 0.75rem;
+  }
+ 
+  .dark {
+    --background: 158 42% 10%;
+    --foreground: 60 33% 98%;
+    --card: 158 42% 12%;
+    --card-foreground: 60 33% 98%;
+    --popover: 158 42% 12%;
+    --popover-foreground: 60 33% 98%;
+    --primary: 142 62% 42%;
+    --primary-foreground: 158 42% 10%;
+    --secondary: 54 95% 56%;
+    --secondary-foreground: 158 42% 10%;
+    --muted: 158 33% 17%;
+    --muted-foreground: 158 20% 65%;
+    --accent: 54 95% 56%;
+    --accent-foreground: 158 42% 10%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 60 33% 98%;
+    --border: 158 33% 17%;
+    --input: 158 33% 17%;
+    --ring: 142 62% 42%;
+    --chart-1: 142 62% 42%;
+    --chart-2: 54 95% 56%;
+    --chart-3: 168 83% 32%;
+    --chart-4: 36 100% 50%;
+    --chart-5: 84 81% 44%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .cartoon-button {
+    @apply relative bg-primary text-primary-foreground font-bold py-3 px-6 rounded-cartoon shadow-cartoon transition-all duration-200 hover:-translate-y-1 hover:shadow-cartoon-lg active:translate-y-1 active:shadow-cartoon-sm;
+  }
+  
+  .flat-card {
+    @apply bg-card rounded-cartoon border-2 border-border shadow-flat transition-all duration-200 hover:shadow-flat-lg;
+  }
+}
+
+/* 自定义滚动条样式 */
+.canvas-scroll-container {
+  /* 滚动条宽度和颜色 */
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+/* Webkit浏览器的滚动条样式 */
+.canvas-scroll-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.canvas-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.canvas-scroll-container::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+.canvas-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* 滚动条交叉处的样式 */
+.canvas-scroll-container::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 确保滚动行为平滑 */
+.canvas-scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
