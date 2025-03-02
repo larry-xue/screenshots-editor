@@ -22,8 +22,10 @@ interface BoxControlsProps {
   onAddImageBox: () => void;
   onDeleteBox: (id: string) => void;
   onStyleChange: (id: string, style: any) => void;
+  onPropertyChange: (id: string, property: string, value: any) => void;
   onContentChange: (id: string, content: string) => void;
   onImageSettingsChange: (id: string, settings: any) => void;
+  boxes: BoxData[];
 }
 
 const BoxControls: React.FC<BoxControlsProps> = ({
@@ -32,8 +34,10 @@ const BoxControls: React.FC<BoxControlsProps> = ({
   onAddImageBox,
   onDeleteBox,
   onStyleChange,
+  onPropertyChange,
   onContentChange,
   onImageSettingsChange,
+  boxes,
 }) => {
   // State for text editing
   const [textContent, setTextContent] = useState('');
@@ -167,6 +171,43 @@ const BoxControls: React.FC<BoxControlsProps> = ({
               </div>
             </div>
             <p className="text-xs text-muted-foreground">Use the resize handle to change box size.</p>
+
+            {/* Z-Index Control */}
+            <div>
+              <div className="flex justify-between">
+                <Label htmlFor="z-index">Layer Order (Z-Index)</Label>
+                <span className="text-xs text-muted-foreground">{selectedBox.zIndex}</span>
+              </div>
+              <div className="flex gap-2 mt-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    const currentBox = boxes.find(box => box.id === selectedBox.id);
+                    if (currentBox) {
+                      onPropertyChange(currentBox.id, 'zIndex', currentBox.zIndex - 1);
+                    }
+                  }}
+                >
+                  Move Backward
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    const currentBox = boxes.find(box => box.id === selectedBox.id);
+                    if (currentBox) {
+                      onPropertyChange(currentBox.id, 'zIndex', currentBox.zIndex + 1);
+                    }
+                  }}
+                >
+                  Move Forward
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Higher values appear on top of lower values.</p>
+            </div>
           </div>
 
           {/* Image Settings (only for image boxes) */}

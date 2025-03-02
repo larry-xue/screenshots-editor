@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text box support with editable content
 - Box selection and manipulation (move, resize)
 - Canvas display scaling for better editing experience
+- Added z-index support for boxes with automatic increment for new boxes
+- Added layer order controls (Move Forward/Backward) in box settings
 
 ### Changed
 - Improved box dragging to require Shift key
@@ -29,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplified image box styles by removing fit mode and scale related code
 - Removed position constraints in Box component to allow free movement
 - Updated EditorV2 to create new image boxes with 'cover' mode only
+- Modified box selection behavior to prevent selection while Shift key is pressed
+- Disabled text selection in boxes to improve dragging experience
 
 ### Fixed
 - Box resize handle now properly scales with display zoom

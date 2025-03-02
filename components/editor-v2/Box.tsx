@@ -40,13 +40,15 @@ const Box: React.FC<BoxProps> = ({
   // Handle box click
   const handleBoxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect();
+    // 当按住 shift 时不允许选中
+    if (!e.shiftKey) {
+      onSelect();
+    }
   };
 
   // 鼠标按下事件处理
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect();
     
     // Only initiate box dragging if Shift key is pressed and we're not on the resize handle
     const target = e.target as HTMLElement;
@@ -66,6 +68,9 @@ const Box: React.FC<BoxProps> = ({
           y: (e.clientY - box.top) 
         });
       }
+    } else if (!e.shiftKey) {
+      // 只有在没有按住 shift 时才允许选中
+      onSelect();
     }
   };
 
@@ -143,6 +148,8 @@ const Box: React.FC<BoxProps> = ({
     height: `${data.height * displayScale}px`,
     position: 'absolute' as const,
     transformOrigin: 'top left',
+    userSelect: 'none' as const, // 禁止文本选择
+    zIndex: data.zIndex, // 添加 z-index 支持
   };
 
   // 文本框样式

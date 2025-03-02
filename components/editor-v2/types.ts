@@ -8,6 +8,7 @@ export interface BoxData {
   content: string;
   style: BoxStyle;
   imageSettings?: ImageSettings;
+  zIndex: number;
 }
 
 export interface ImageSettings {

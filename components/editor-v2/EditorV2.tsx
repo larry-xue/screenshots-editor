@@ -47,6 +47,9 @@ const EditorV2: React.FC<EditorV2Props> = () => {
 
   // Handle adding a new text box
   const handleAddTextBox = () => {
+    // 获取当前最大的 zIndex
+    const maxZIndex = boxes.reduce((max, box) => Math.max(max, box.zIndex || 0), 0);
+    
     const newBox: BoxData = {
       id: uuidv4(),
       x: canvasSettings.width / 2 - 100,
@@ -55,7 +58,8 @@ const EditorV2: React.FC<EditorV2Props> = () => {
       height: 100,
       type: 'text',
       content: 'Text Box Content',
-      style: { ...DEFAULT_BOX_STYLE }
+      style: { ...DEFAULT_BOX_STYLE },
+      zIndex: maxZIndex + 1
     };
     
     setBoxes([...boxes, newBox]);
@@ -112,6 +116,9 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           boxHeight = maxHeight;
           boxWidth = boxWidth * ratio;
         }
+
+        // 获取当前最大的 zIndex
+        const maxZIndex = boxes.reduce((max, box) => Math.max(max, box.zIndex || 0), 0);
         
         // 创建新的图片框，始终使用cover模式
         const newBox: BoxData = {
@@ -127,7 +134,8 @@ const EditorV2: React.FC<EditorV2Props> = () => {
             fit: 'cover',
             width: img.width,
             height: img.height
-          }
+          },
+          zIndex: maxZIndex + 1
         };
         
         setBoxes([...boxes, newBox]);
@@ -177,8 +185,18 @@ const EditorV2: React.FC<EditorV2Props> = () => {
   
   // Handle updating box style
   const handleBoxStyleChange = (id: string, style: any) => {
+    console.log(id, style, boxes, boxes.map(box => 
+      box.id === id ? { ...box, style: { ...box.style, ...style } } : box
+    ));
     setBoxes(boxes.map(box => 
       box.id === id ? { ...box, style: { ...box.style, ...style } } : box
+    ));
+  };
+
+  // Handle updating box property
+  const handleBoxPropertyChange = (id: string, property: string, value: any) => {
+    setBoxes(boxes.map(box => 
+      box.id === id ? { ...box, [property]: value } : box
     ));
   };
   
@@ -253,8 +271,10 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           onAddImageBox={handleAddImageBox}
           onDeleteBox={handleDeleteBox}
           onStyleChange={handleBoxStyleChange}
+          onPropertyChange={handleBoxPropertyChange}
           onContentChange={handleBoxContentChange}
           onImageSettingsChange={handleImageSettingsChange}
+          boxes={boxes}
         />
         
         {/* Hidden file input for image upload */}
