@@ -229,23 +229,36 @@ const BoxControls: React.FC<BoxControlsProps> = ({
           <div className="space-y-4 mb-6">
             <h3 className="text-sm font-medium">Style</h3>
             
-            {/* Background Color */}
-            <div className="space-y-2">
-              <Label htmlFor="bg-color">Background Color</Label>
-              <div className="flex gap-2 mt-1">
-                <div 
-                  className="w-10 h-10 rounded border"
-                  style={{ backgroundColor: selectedBox.style.backgroundColor }}
-                />
-                <Input
-                  id="bg-color"
-                  type="text"
-                  value={selectedBox.style.backgroundColor}
-                  onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
-                  placeholder="#FFFFFF or rgba(255,255,255,1)"
-                  className="flex-1"
+            {/* Background Controls */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="has-background">Background</Label>
+                <Switch
+                  id="has-background"
+                  checked={selectedBox.style.hasBackground}
+                  onCheckedChange={(checked) => handleStyleChange('hasBackground', checked)}
                 />
               </div>
+              
+              {selectedBox.style.hasBackground && (
+                <div className="space-y-2">
+                  <Label htmlFor="bg-color">Background Color</Label>
+                  <div className="flex gap-2 mt-1">
+                    <div 
+                      className="w-10 h-10 rounded border"
+                      style={{ backgroundColor: selectedBox.style.backgroundColor }}
+                    />
+                    <Input
+                      id="bg-color"
+                      type="text"
+                      value={selectedBox.style.backgroundColor}
+                      onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
+                      placeholder="#FFFFFF or rgba(255,255,255,1)"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Opacity */}
@@ -265,57 +278,73 @@ const BoxControls: React.FC<BoxControlsProps> = ({
               />
             </div>
             
-            {/* Border Width */}
-            <div>
-              <div className="flex justify-between">
-                <Label htmlFor="border-width">Border Width</Label>
-                <span className="text-xs text-muted-foreground">{selectedBox.style.borderWidth}px</span>
-              </div>
-              <Slider
-                id="border-width"
-                value={[selectedBox.style.borderWidth]}
-                min={0}
-                max={10}
-                step={1}
-                onValueChange={(value) => handleStyleChange('borderWidth', value[0])}
-                className="mt-1.5"
-              />
-            </div>
-            
-            {/* Border Radius */}
-            <div>
-              <div className="flex justify-between">
-                <Label htmlFor="border-radius">Border Radius</Label>
-                <span className="text-xs text-muted-foreground">{selectedBox.style.borderRadius}px</span>
-              </div>
-              <Slider
-                id="border-radius"
-                value={[selectedBox.style.borderRadius]}
-                min={0}
-                max={50}
-                step={1}
-                onValueChange={(value) => handleStyleChange('borderRadius', value[0])}
-                className="mt-1.5"
-              />
-            </div>
-            
-            {/* Border Color */}
-            <div className="space-y-2">
-              <Label htmlFor="border-color">Border Color</Label>
-              <div className="flex gap-2 mt-1">
-                <div 
-                  className="w-10 h-10 rounded border"
-                  style={{ backgroundColor: selectedBox.style.borderColor }}
-                />
-                <Input
-                  id="border-color"
-                  type="text"
-                  value={selectedBox.style.borderColor}
-                  onChange={(e) => handleStyleChange('borderColor', e.target.value)}
-                  placeholder="#000000"
-                  className="flex-1"
+            {/* Border Controls */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="has-border">Border</Label>
+                <Switch
+                  id="has-border"
+                  checked={selectedBox.style.hasBorder}
+                  onCheckedChange={(checked) => handleStyleChange('hasBorder', checked)}
                 />
               </div>
+              
+              {selectedBox.style.hasBorder && (
+                <>
+                  {/* Border Width */}
+                  <div>
+                    <div className="flex justify-between">
+                      <Label htmlFor="border-width">Border Width</Label>
+                      <span className="text-xs text-muted-foreground">{selectedBox.style.borderWidth}px</span>
+                    </div>
+                    <Slider
+                      id="border-width"
+                      value={[selectedBox.style.borderWidth]}
+                      min={0}
+                      max={10}
+                      step={1}
+                      onValueChange={(value) => handleStyleChange('borderWidth', value[0])}
+                      className="mt-1.5"
+                    />
+                  </div>
+                  
+                  {/* Border Color */}
+                  <div className="space-y-2">
+                    <Label htmlFor="border-color">Border Color</Label>
+                    <div className="flex gap-2 mt-1">
+                      <div 
+                        className="w-10 h-10 rounded border"
+                        style={{ backgroundColor: selectedBox.style.borderColor }}
+                      />
+                      <Input
+                        id="border-color"
+                        type="text"
+                        value={selectedBox.style.borderColor}
+                        onChange={(e) => handleStyleChange('borderColor', e.target.value)}
+                        placeholder="#000000"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Border Radius */}
+                  <div>
+                    <div className="flex justify-between">
+                      <Label htmlFor="border-radius">Border Radius</Label>
+                      <span className="text-xs text-muted-foreground">{selectedBox.style.borderRadius}px</span>
+                    </div>
+                    <Slider
+                      id="border-radius"
+                      value={[selectedBox.style.borderRadius]}
+                      min={0}
+                      max={50}
+                      step={1}
+                      onValueChange={(value) => handleStyleChange('borderRadius', value[0])}
+                      className="mt-1.5"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             
             {/* Shadow */}

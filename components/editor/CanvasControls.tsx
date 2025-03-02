@@ -17,7 +17,7 @@ import { CanvasSettings } from './types';
 interface CanvasControlsProps {
   settings: CanvasSettings;
   onSettingsChange: (settings: Partial<CanvasSettings>) => void;
-  onExport: () => void;
+  onExport: (settings: CanvasSettings) => void;
 }
 
 const CanvasControls: React.FC<CanvasControlsProps> = ({
@@ -186,7 +186,7 @@ const CanvasControls: React.FC<CanvasControlsProps> = ({
           
           <Button 
             className="w-full mt-4 gap-2" 
-            onClick={onExport}
+            onClick={() => onExport(settings)}
           >
             <Download className="h-4 w-4" />
             Export Image
