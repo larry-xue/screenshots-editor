@@ -1,0 +1,53 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Initial implementation of the editor with basic text and image box support
+- Canvas with adjustable size and background color
+- Box controls for styling (background color, border, shadow, etc.)
+- Image box support with drag and drop functionality
+- Text box support with editable content
+- Box selection and manipulation (move, resize)
+- Canvas display scaling for better editing experience
+
+### Changed
+- Improved box dragging to require Shift key
+- Simplified image handling by removing fit modes and using 'cover' mode only
+- Enhanced box positioning to allow elements to extend beyond canvas boundaries
+- Updated canvas overflow behavior to only show content within bounds
+- Removed internal image dragging functionality
+- Streamlined image box controls by removing unnecessary options
+- Removed image fit mode options from BoxControls, now always using 'cover' mode
+- Modified Box component to allow dragging elements partially outside the canvas
+- Updated Canvas component to use 'overflow: clip' for proper content clipping
+- Simplified image box styles by removing fit mode and scale related code
+- Removed position constraints in Box component to allow free movement
+- Updated EditorV2 to create new image boxes with 'cover' mode only
+
+### Fixed
+- Box resize handle now properly scales with display zoom
+- Text overflow issues in text boxes
+- Image aspect ratio preservation when adding new images
+- Box position calculation with display scaling
+- Canvas boundary constraints for box movement and resizing
+
+### Technical
+- Implemented proper TypeScript types for all components
+- Added proper event handling for mouse interactions
+- Improved component structure and separation of concerns
+- Enhanced state management for box properties
+- Added support for high-resolution image handling
+
+## [0.1.0] - 2024-03-XX
+- Initial release with basic editor functionality 
+
+### Removed
+- Removed image internal dragging functionality
+- Removed fit mode selection UI and related code
+- Removed image scaling controls for 'original' mode
