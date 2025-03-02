@@ -71,14 +71,6 @@ const BoxControls: React.FC<BoxControlsProps> = ({
     }
   };
 
-  // Get the current image fit mode
-  const getImageFitMode = () => {
-    if (selectedBox?.type === 'image') {
-      return selectedBox.imageSettings?.fit || 'cover';
-    }
-    return 'cover';
-  };
-
   return (
     <div className="p-6 space-y-6">
       {/* Add Box Controls */}
@@ -181,71 +173,14 @@ const BoxControls: React.FC<BoxControlsProps> = ({
           {selectedBox.type === 'image' && (
             <div className="space-y-4 mb-6">
               <h3 className="text-sm font-medium">Image Settings</h3>
-              
-              {/* Image Fit Mode */}
-              <div>
-                <Label htmlFor="image-fit">Fit Mode</Label>
-                <Select
-                  value={getImageFitMode()}
-                  onValueChange={(value) => handleImageSettingsChange('fit', value)}
-                >
-                  <SelectTrigger id="image-fit" className="mt-1">
-                    <SelectValue placeholder="Select fit mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cover">
-                      <div className="flex items-center gap-2">
-                        <MaximizeIcon className="h-4 w-4" />
-                        <span>Fill Box</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="contain">
-                      <div className="flex items-center gap-2">
-                        <MinimizeIcon className="h-4 w-4" />
-                        <span>Fit Within Box</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="original">
-                      <div className="flex items-center gap-2">
-                        <Image className="h-4 w-4" />
-                        <span>Original Size</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {getImageFitMode() === 'cover' && "Image will fill the entire box"}
-                  {getImageFitMode() === 'contain' && "Image will fit within the box while maintaining aspect ratio"}
-                  {getImageFitMode() === 'original' && "Image will display at its original size"}
-                </p>
-              </div>
 
-              {/* Image Size Controls (only for original fit mode) */}
-              {getImageFitMode() === 'original' && (
-                <div className="space-y-4 mt-4">
-                  <div>
-                    <div className="flex justify-between">
-                      <Label htmlFor="image-scale">Image Scale</Label>
-                      <span className="text-xs text-muted-foreground">
-                        {(selectedBox.imageSettings?.scale || 1) * 100}%
-                      </span>
-                    </div>
-                    <Slider
-                      id="image-scale"
-                      value={[(selectedBox.imageSettings?.scale || 1) * 100]}
-                      min={10}
-                      max={200}
-                      step={5}
-                      onValueChange={(value) => handleImageSettingsChange('scale', value[0] / 100)}
-                      className="mt-1.5"
-                    />
-                  </div>
+              {/* 显示图片原始尺寸 */}
+              {selectedBox.imageSettings?.width && selectedBox.imageSettings?.height && (
+                <div className="text-xs text-muted-foreground mt-2">
+                  Original image size: {selectedBox.imageSettings.width} × {selectedBox.imageSettings.height}px
                 </div>
               )}
               
-              <p className="text-xs text-muted-foreground mt-2">
-                Drag the image to adjust its position within the box
-              </p>
             </div>
           )}
 

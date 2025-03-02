@@ -80,27 +80,72 @@ const EditorV2: React.FC<EditorV2Props> = () => {
     }
     
     const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
+    
+    reader.onload = () => {
+      // 确保读取结果是字符串
+      const imageDataUrl = reader.result as string;
+      if (!imageDataUrl) {
+        toast.error('Failed to load image');
+        return;
+      }
+      
+      // 创建临时图片获取尺寸
+      const img = new Image();
+      img.onload = () => {
+        // 计算合适的框大小
+        const maxWidth = canvasSettings.width * 0.7;
+        const maxHeight = canvasSettings.height * 0.7;
+        
+        // 保持宽高比
+        let boxWidth = img.width;
+        let boxHeight = img.height;
+        
+        // 缩放大图片
+        if (boxWidth > maxWidth) {
+          const ratio = maxWidth / boxWidth;
+          boxWidth = maxWidth;
+          boxHeight = boxHeight * ratio;
+        }
+        
+        if (boxHeight > maxHeight) {
+          const ratio = maxHeight / boxHeight;
+          boxHeight = maxHeight;
+          boxWidth = boxWidth * ratio;
+        }
+        
+        // 创建新的图片框，始终使用cover模式
         const newBox: BoxData = {
           id: uuidv4(),
-          x: canvasSettings.width / 2 - 150,
-          y: canvasSettings.height / 2 - 100,
-          width: 300,
-          height: 200,
+          x: (canvasSettings.width - boxWidth) / 2,
+          y: (canvasSettings.height - boxHeight) / 2,
+          width: boxWidth,
+          height: boxHeight,
           type: 'image',
-          content: event.target.result as string,
+          content: imageDataUrl,
           style: { ...DEFAULT_BOX_STYLE },
           imageSettings: {
-            fit: 'cover'
+            fit: 'cover',
+            width: img.width,
+            height: img.height
           }
         };
         
         setBoxes([...boxes, newBox]);
         setSelectedBoxId(newBox.id);
         toast.success('Image added');
-      }
+      };
+      
+      img.onerror = () => {
+        toast.error('Failed to process image');
+      };
+      
+      img.src = imageDataUrl;
     };
+    
+    reader.onerror = () => {
+      toast.error('Failed to read image file');
+    };
+    
     reader.readAsDataURL(file);
     
     // Reset file input

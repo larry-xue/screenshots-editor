@@ -60,7 +60,7 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
             height: `${scaledHeight}px`,
             background,
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'clip',
             transformOrigin: 'top left',
           }}
           onClick={handleCanvasClick}
