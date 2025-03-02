@@ -17,20 +17,6 @@ export const getLayoutClass = (layout: string): string => {
 };
 
 // 样式相关工具函数
-export const getShadowStyle = (shadow: { 
-  enabled: boolean; 
-  x: number; 
-  y: number; 
-  blur: number; 
-  spread: number; 
-  color: string; 
-}) => {
-  if (!shadow.enabled) return {};
-  return {
-    boxShadow: `${shadow.x}px ${shadow.y}px ${shadow.blur}px ${shadow.spread}px ${shadow.color}`,
-  };
-};
-
 export const getBorderStyle = (border: { 
   enabled: boolean; 
   width: number; 
@@ -58,8 +44,7 @@ export const getTransformStyle = (
 ) => {
   // 获取位置信息
   const position = imagePositions[index] || { x: 0, y: 0, scale: 1 };
-  // 获取缩放值，如果不存在则默认为1
-  const scale = position.scale || 1;
+  const scale = position.scale !== undefined ? position.scale : 1;
   
   // 基础3D变换样式
   const transform3dStyle = `
@@ -88,10 +73,20 @@ export const getTransformStyle = (
 // 位置相关工具函数
 export const getPositionValue = (
   index: number | null, 
-  positions: {x: number, y: number}[], 
+  positions: {x: number, y: number, scale?: number}[], 
   axis: 'x' | 'y'
 ): number => {
   if (index === null) return 0;
   const position = positions[index];
   return position ? position[axis] : 0;
+}; 
+
+// 获取缩放值
+export const getScaleValue = (
+  index: number | null,
+  positions: {x: number, y: number, scale?: number}[]
+): number => {
+  if (index === null) return 1;
+  const position = positions[index];
+  return position && position.scale !== undefined ? position.scale : 1;
 }; 

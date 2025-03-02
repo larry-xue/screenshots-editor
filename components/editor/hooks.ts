@@ -320,7 +320,8 @@ export const useDraggableImages = (selectedImageIndex: number | null) => {
     if (index !== null) {
       setImagePositions(prev => {
         const newPositions = [...prev];
-        newPositions[index] = { x: 0, y: 0, scale: 1 };
+        const currentScale = newPositions[index]?.scale || 1;
+        newPositions[index] = { x: 0, y: 0, scale: currentScale };
         return newPositions;
       });
     }
@@ -339,18 +340,16 @@ export const useDraggableImages = (selectedImageIndex: number | null) => {
       });
     }
   };
-  
+
   // 更新图片缩放
-  const updateImageScale = (index: number, scale: number) => {
+  const updateImageScale = (index: number, value: number) => {
     if (index !== null) {
       setImagePositions(prev => {
         const newPositions = [...prev];
         if (!newPositions[index]) {
           newPositions[index] = { x: 0, y: 0, scale: 1 };
         }
-        // 限制缩放范围在0.2到5之间
-        const clampedScale = Math.max(0.2, Math.min(5, scale));
-        newPositions[index].scale = clampedScale;
+        newPositions[index].scale = value;
         return newPositions;
       });
     }
@@ -372,20 +371,26 @@ export const useDraggableImages = (selectedImageIndex: number | null) => {
   // 初始化新添加图片的位置
   const initializePositions = (imagesCount: number) => {
     setImagePositions(prev => {
+      // 创建一个新的位置数组
       const newPositions = [...prev];
-      while (newPositions.length < imagesCount) {
-        newPositions.push({ x: 0, y: 0, scale: 1 });
+      
+      // 确保每个图片都有初始位置
+      for (let i = 0; i < imagesCount; i++) {
+        if (!newPositions[i]) {
+          newPositions[i] = { x: 0, y: 0, scale: 1 };
+        }
       }
+      
       return newPositions;
     });
   };
 
-  return { 
-    imagePositions, 
-    isDragging, 
-    handleMouseDown, 
-    handleMouseMove, 
-    handleMouseUp, 
+  return {
+    imagePositions,
+    isDragging,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
     resetImagePosition,
     updateImagePosition,
     updateImageScale,

@@ -3,28 +3,21 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { 
   Monitor, 
   ArrowLeft, 
   Download, 
-  Share, 
-  Layers, 
-  Palette, 
-  Settings, 
-  Plus
+  Share
 } from "lucide-react";
 import { toast } from "sonner";
 
 // 导入自定义组件
 import ImageList from "@/components/editor/ImageList";
-import LayoutControls from "@/components/editor/LayoutControls";
-import ZoomControls from "@/components/editor/ZoomControls";
 import EditorCanvas from "@/components/editor/EditorCanvas";
-import StyleControls from "@/components/editor/StyleControls";
-import TransformControls from "@/components/editor/TransformControls";
-import SettingsControls from "@/components/editor/SettingsControls";
+import CanvasControls from "@/components/editor/CanvasControls";
+import ImageControls from "@/components/editor/ImageControls";
+import { ThemePreset } from "@/components/editor/ThemePresets";
 
 // 导入自定义钩子和工具函数
 import { useZoom, useDraggableImages } from "@/components/editor/hooks";
@@ -47,16 +40,6 @@ export default function EditorPage() {
     rotateY: 0,
     rotateZ: 0,
     perspective: 1000,
-  });
-  
-  // 阴影状态
-  const [shadow, setShadow] = useState({
-    enabled: true,
-    x: 0,
-    y: 15,
-    blur: 25,
-    spread: 0,
-    color: "rgba(0, 0, 0, 0.1)",
   });
   
   // 边框状态
@@ -103,8 +86,11 @@ export default function EditorPage() {
         if (event.target?.result) {
           newImages.push(event.target.result as string);
           if (newImages.length === files.length) {
-            setImages(prev => [...prev, ...newImages]);
-            initializePositions(images.length + newImages.length);
+            setImages(prev => {
+              const updatedImages = [...prev, ...newImages];
+              initializePositions(updatedImages.length);
+              return updatedImages;
+            });
             toast.success(`Added ${newImages.length} image${newImages.length > 1 ? 's' : ''}`);
           }
         }
@@ -148,6 +134,13 @@ export default function EditorPage() {
     setSpecificZoom(value);
   };
   
+  // 处理主题预设选择
+  const handleSelectTheme = (theme: ThemePreset) => {
+    console.log("应用主题:", theme.name, "背景:", theme.background);
+    setBackground(theme.background);
+    toast.success(`Applied ${theme.name} theme`);
+  };
+  
   return (
     <div className="flex h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -177,39 +170,28 @@ export default function EditorPage() {
       </header>
       
       <div className="flex flex-1 overflow-hidden">
-        {/* 左侧边栏 */}
-        <div className="w-[250px] border-r bg-muted/30 p-4 overflow-y-auto">
+        {/* 左侧边栏 - 画布控制 */}
+        <div className="w-[300px] border-r bg-muted/30 overflow-y-auto">
           <div className="space-y-6">
-            {/* 图片列表 */}
-            <ImageList 
-              images={images}
-              selectedImageIndex={selectedImageIndex}
-              onSelectImage={setSelectedImageIndex}
-              onAddImages={handleAddImages}
-              onRemoveImage={handleRemoveImage}
-            />
-            
-            {/* 布局控制 */}
-            <LayoutControls 
+            {/* 画布控制 */}
+            <CanvasControls 
               layout={layout}
+              background={background}
               padding={padding}
               gap={gap}
+              border={border}
               onLayoutChange={setLayout}
               onPaddingChange={setPadding}
               onGapChange={setGap}
+              onBackgroundChange={setBackground}
+              onBorderChange={setBorder}
+              onSelectTheme={handleSelectTheme}
             />
           </div>
         </div>
         
         {/* 主内容区域 */}
         <div className="flex-1 overflow-auto relative">
-          {/* 缩放控制 */}
-          <ZoomControls 
-            zoom={zoom}
-            onZoom={handleZoom}
-            onResetZoom={handleResetZoom}
-          />
-          
           <div 
             className="flex items-center justify-center min-h-full p-4 editor-container"
             onMouseMove={handleMouseMove}
@@ -236,7 +218,6 @@ export default function EditorPage() {
               imagePositions={imagePositions}
               transform3d={transform3d}
               border={border}
-              shadow={shadow}
               isDragging={isDragging}
               onSelectImage={setSelectedImageIndex}
               onMouseDown={handleMouseDown}
@@ -245,62 +226,29 @@ export default function EditorPage() {
           </div>
         </div>
         
-        {/* 右侧边栏 */}
+        {/* 右侧边栏 - 图片控制 */}
         <div className="w-[300px] border-l bg-muted/30 overflow-y-auto">
-          <Tabs defaultValue="style">
-            <TabsList className="w-full">
-              <TabsTrigger value="style" className="flex-1">
-                <Palette className="h-4 w-4 mr-2" />
-                Style
-              </TabsTrigger>
-              <TabsTrigger value="transform" className="flex-1">
-                <Layers className="h-4 w-4 mr-2" />
-                Transform
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex-1">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
+          <div className="space-y-6">
+            {/* 图片列表 */}
+            <ImageList 
+              images={images}
+              selectedImageIndex={selectedImageIndex}
+              onSelectImage={setSelectedImageIndex}
+              onAddImages={handleAddImages}
+              onRemoveImage={handleRemoveImage}
+            />
             
-            {/* 样式控制 */}
-            <TabsContent value="style">
-              <StyleControls 
-                selectedImageIndex={selectedImageIndex}
-                background={background}
-                border={border}
-                shadow={shadow}
-                onBackgroundChange={setBackground}
-                onBorderChange={setBorder}
-                onShadowChange={setShadow}
-              />
-            </TabsContent>
-            
-            {/* 变换控制 */}
-            <TabsContent value="transform">
-              <TransformControls 
-                selectedImageIndex={selectedImageIndex}
-                transform3d={transform3d}
-                imagePositions={imagePositions}
-                onTransform3dChange={setTransform3d}
-                onPositionChange={updateImagePosition}
-                onResetPosition={resetImagePosition}
-                onScaleChange={updateImageScale}
-              />
-            </TabsContent>
-            
-            {/* 设置控制 */}
-            <TabsContent value="settings">
-              <SettingsControls 
-                exportFormat={exportFormat}
-                exportQuality={exportQuality}
-                exportScale={exportScale}
-                onExportFormatChange={setExportFormat}
-                onExportQualityChange={setExportQuality}
-                onExportScaleChange={setExportScale}
-              />
-            </TabsContent>
-          </Tabs>
+            {/* 图片控制 */}
+            <ImageControls 
+              selectedImageIndex={selectedImageIndex}
+              transform3d={transform3d}
+              imagePositions={imagePositions}
+              onTransform3dChange={setTransform3d}
+              onPositionChange={updateImagePosition}
+              onScaleChange={updateImageScale}
+              onResetPosition={resetImagePosition}
+            />
+          </div>
         </div>
       </div>
       
