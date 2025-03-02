@@ -25,6 +25,10 @@ export default function Home() {
             <Link href="/editor" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
               Editor
             </Link>
+            <Link href="/editor-v2" className="text-foreground/70 hover:text-foreground transition-colors font-medium relative">
+              Editor V2
+              <span className="absolute -top-2 -right-6 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">New</span>
+            </Link>
             <Link href="/templates" className="text-foreground/70 hover:text-foreground transition-colors font-medium">
               Templates
             </Link>
@@ -58,6 +62,11 @@ export default function Home() {
                 <button className="cartoon-button">
                   Start Creating <ArrowRight className="h-4 w-4 ml-2 inline" />
                 </button>
+              </Link>
+              <Link href="/editor-v2">
+                <Button size="lg" variant="default" className="rounded-cartoon border-2 hover:-translate-y-1 transition-transform bg-secondary">
+                  Try Editor V2 <span className="text-xs ml-2 px-1.5 py-0.5 bg-white/20 rounded-full">New</span>
+                </Button>
               </Link>
               <Link href="/templates">
                 <Button size="lg" variant="outline" className="rounded-cartoon border-2 hover:-translate-y-1 transition-transform">
