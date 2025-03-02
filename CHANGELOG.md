@@ -30,9 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Canvas component to use 'overflow: clip' for proper content clipping
 - Simplified image box styles by removing fit mode and scale related code
 - Removed position constraints in Box component to allow free movement
-- Updated EditorV2 to create new image boxes with 'cover' mode only
+- Updated editor to create new image boxes with 'cover' mode only
 - Modified box selection behavior to prevent selection while Shift key is pressed
 - Disabled text selection in boxes to improve dragging experience
+- Removed legacy editor (v1) and made the new editor the default
 
 ### Fixed
 - Box resize handle now properly scales with display zoom
@@ -40,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Image aspect ratio preservation when adding new images
 - Box position calculation with display scaling
 - Canvas boundary constraints for box movement and resizing
+- Implemented image export functionality using html2canvas
+- Added support for PNG and JPEG export formats with quality and scale options
+- Fixed transparent background handling for JPEG exports
 
 ### Technical
 - Implemented proper TypeScript types for all components
@@ -55,3 +59,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed image internal dragging functionality
 - Removed fit mode selection UI and related code
 - Removed image scaling controls for 'original' mode
+- Removed legacy editor implementation (v1)

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 import Canvas from './Canvas';
 import CanvasControls from './CanvasControls';
 import BoxControls from './BoxControls';
@@ -227,11 +228,75 @@ const EditorV2: React.FC<EditorV2Props> = () => {
     if (!canvasRef.current) return;
     
     try {
-      // Use html2canvas or similar library to capture the canvas
-      // For now just show a message
-      toast.success('Export functionality would go here');
+      return toast.promise(
+        (async () => {
+          // 创建html2canvas配置
+          const scale = canvasSettings.exportScale;
+          const config = {
+            scale: scale, // 导出缩放比例
+            useCORS: true, // 允许跨域图片
+            allowTaint: true, // 允许跨域图片
+            backgroundColor: null, // 保持透明背景
+            logging: false, // 禁用日志
+          };
+
+          // 使用html2canvas捕获画布
+          const canvas = await html2canvas(canvasRef.current, config);
+
+          // 转换为blob
+          const blob = await new Promise<Blob>((resolve) => {
+            if (canvasSettings.exportFormat === 'jpeg') {
+              // 对于JPEG格式，使用白色背景
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < imageData.data.length; i += 4) {
+                  const alpha = imageData.data[i + 3];
+                  if (alpha < 255) {
+                    imageData.data[i] = 255;
+                    imageData.data[i + 1] = 255;
+                    imageData.data[i + 2] = 255;
+                    imageData.data[i + 3] = 255;
+                  }
+                }
+                ctx.putImageData(imageData, 0, 0);
+              }
+            }
+            
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  resolve(blob);
+                } else {
+                  throw new Error('Failed to create blob');
+                }
+              },
+              `image/${canvasSettings.exportFormat}`,
+              canvasSettings.exportQuality / 100
+            );
+          });
+
+          // 创建下载链接
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `screenshot.${canvasSettings.exportFormat}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          return "Image downloaded successfully";
+        })(),
+        {
+          loading: "Generating image...",
+          success: (data) => data,
+          error: "Failed to download image",
+        }
+      );
     } catch (error) {
-      toast.error('Failed to export canvas');
+      console.error("Error downloading image:", error);
+      throw error;
     }
   };
 

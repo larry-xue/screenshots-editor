@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ColorPicker } from "@/components/editor/ColorPicker";
-import { Switch } from "@/components/ui/switch";
-import ThemePresets, { ThemePreset } from './ThemePresets';
 import { 
   Select,
   SelectContent,
@@ -12,326 +11,187 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Download } from 'lucide-react';
+import { CanvasSettings } from './types';
 
 interface CanvasControlsProps {
-  layout: string;
-  background: string;
-  padding: number;
-  gap: number;
-  border: {
-    enabled: boolean;
-    width: number;
-    radius: number;
-    color: string;
-  };
-  onLayoutChange: (layout: string) => void;
-  onPaddingChange: (padding: number) => void;
-  onGapChange: (gap: number) => void;
-  onBackgroundChange: (color: string) => void;
-  onBorderChange: (border: {
-    enabled: boolean;
-    width: number;
-    radius: number;
-    color: string;
-  }) => void;
-  onSelectTheme: (theme: ThemePreset) => void;
+  settings: CanvasSettings;
+  onSettingsChange: (settings: Partial<CanvasSettings>) => void;
+  onExport: () => void;
 }
 
 const CanvasControls: React.FC<CanvasControlsProps> = ({
-  layout,
-  background,
-  padding,
-  gap,
-  border,
-  onLayoutChange,
-  onPaddingChange,
-  onGapChange,
-  onBackgroundChange,
-  onBorderChange,
-  onSelectTheme
+  settings,
+  onSettingsChange,
+  onExport,
 }) => {
-  // 布局选项
-  const layoutOptions = [
-    { value: "single", label: "1×1" },
-    { value: "2x1", label: "2×1" },
-    { value: "1x2", label: "1×2" },
-    { value: "2x2", label: "2×2" },
-    { value: "3x2", label: "3×2" },
-  ];
-
-  // 渐变背景状态
-  const [isGradient, setIsGradient] = useState(background.includes('gradient'));
-  const [gradientType, setGradientType] = useState<'linear' | 'radial'>(
-    background.includes('linear') ? 'linear' : 'radial'
-  );
-  const [gradientAngle, setGradientAngle] = useState(135);
-  const [color1, setColor1] = useState(background.includes('gradient') ? '#0f172a' : background);
-  const [color2, setColor2] = useState(background.includes('gradient') ? '#1e40af' : '#e2e8f0');
-
-  // 初始化渐变颜色
-  useEffect(() => {
-    // 防止循环更新
-    const isUserChange = !background.includes(`${gradientAngle}deg`);
-    if (!isUserChange) return;
-    
-    // 重置渐变状态
-    setIsGradient(background.includes('gradient'));
-    
-    if (background.includes('gradient')) {
-      const isLinear = background.includes('linear-gradient');
-      setGradientType(isLinear ? 'linear' : 'radial');
-      
-      // 提取角度（仅适用于线性渐变）
-      if (isLinear) {
-        const angleMatch = background.match(/(\d+)deg/);
-        console.log('angleMatch', angleMatch, background);
-        if (angleMatch && angleMatch[1]) {
-          setGradientAngle(parseInt(angleMatch[1]));
-        }
-      }
-      
-      // 提取颜色
-      const colorMatches = background.match(/(#[0-9a-f]{3,8}|rgba?\([^)]+\))/gi);
-      if (colorMatches && colorMatches.length >= 2) {
-        setColor1(colorMatches[0]);
-        setColor2(colorMatches[1]);
-      }
-    } else {
-      setColor1(background);
-      setColor2('#e2e8f0');
+  // Handle changing canvas size
+  const handleSizeChange = (dimension: 'width' | 'height', value: string) => {
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue > 0) {
+      onSettingsChange({ [dimension]: numValue });
     }
-  }, [background]);
+  };
 
-  // 更新渐变背景
-  const updateGradientBackground = useCallback(() => {
-    if (!isGradient) {
-      onBackgroundChange(color1);
-      return;
-    }
+  // Handle changing canvas background color
+  const handleBackgroundChange = (color: string) => {
+    onSettingsChange({ background: color });
+  };
 
-    let gradientString = '';
-    if (gradientType === 'linear') {
-      gradientString = `linear-gradient(${gradientAngle}deg, ${color1} 0%, ${color2} 100%)`;
-    } else {
-      gradientString = `radial-gradient(circle, ${color1} 0%, ${color2} 100%)`;
-    }
-    onBackgroundChange(gradientString);
-  }, [isGradient, gradientType, gradientAngle, color1, color2, onBackgroundChange]);
-
-  // 当渐变相关状态变化时更新背景
-  useEffect(() => {
-    updateGradientBackground();
-  }, [updateGradientBackground]);
+  // Handle changing export settings
+  const handleExportSettingChange = (
+    setting: 'exportFormat' | 'exportQuality' | 'exportScale', 
+    value: any
+  ) => {
+    onSettingsChange({ [setting]: value });
+  };
 
   return (
-    <div className="p-4 space-y-6">
-      {/* 主题预设 */}
-      <ThemePresets 
-        onSelectTheme={onSelectTheme}
-        currentBackground={background}
-      />
-      
-      <Separator />
-      
-      {/* 布局设置 */}
-      <div className="space-y-3">
-        <h3 className="font-medium text-sm">Layout</h3>
-        <div className="grid grid-cols-5 gap-2">
-          {layoutOptions.map((option) => (
-            <button
-              key={option.value}
-              className={`p-2 text-center rounded-md border ${
-                layout === option.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background hover:bg-muted"
-              }`}
-              onClick={() => onLayoutChange(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      
-      <Separator />
-      
-      {/* 间距设置 */}
-      <div className="space-y-4">
-        <div>
-          <div className="flex justify-between">
-            <Label>Padding</Label>
-            <span className="text-xs text-muted-foreground">{padding}px</span>
+    <div className="p-6 space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Canvas Settings</h2>
+        
+        {/* Canvas Size */}
+        <div className="space-y-4 mb-6">
+          <h3 className="text-sm font-medium">Canvas Size</h3>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="canvas-width">Width</Label>
+              <Input
+                id="canvas-width"
+                type="number"
+                value={settings.width}
+                onChange={(e) => handleSizeChange('width', e.target.value)}
+                className="mt-1"
+                min={100}
+                max={3000}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="canvas-height">Height</Label>
+              <Input
+                id="canvas-height"
+                type="number"
+                value={settings.height}
+                onChange={(e) => handleSizeChange('height', e.target.value)}
+                className="mt-1"
+                min={100}
+                max={3000}
+              />
+            </div>
           </div>
-          <Slider
-            value={[padding]}
-            min={0}
-            max={100}
-            step={1}
-            onValueChange={(value) => onPaddingChange(value[0])}
-            className="mt-1.5"
-          />
+          
+          {/* Display Scale Slider */}
+          <div className="mt-4">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="display-scale">Display Scale</Label>
+              <span className="text-xs text-muted-foreground">
+                {Math.round(settings.displayScale * 100)}%
+              </span>
+            </div>
+            <Slider
+              id="display-scale"
+              value={[settings.displayScale * 100]}
+              min={10}
+              max={100}
+              step={5}
+              onValueChange={(value) => onSettingsChange({ displayScale: value[0] / 100 })}
+              className="mt-1.5"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Adjust to zoom in/out the canvas view. The export will still use the full resolution.
+            </p>
+          </div>
         </div>
         
-        <div>
-          <div className="flex justify-between">
-            <Label>Gap</Label>
-            <span className="text-xs text-muted-foreground">{gap}px</span>
-          </div>
-          <Slider
-            value={[gap]}
-            min={0}
-            max={50}
-            step={1}
-            onValueChange={(value) => onGapChange(value[0])}
-            className="mt-1.5"
-          />
-        </div>
-      </div>
-      
-      <Separator />
-      
-      {/* 背景设置 */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium text-sm">Background</h3>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="gradient-toggle" className="text-xs">Gradient</Label>
-            <Switch
-              id="gradient-toggle"
-              checked={isGradient}
-              onCheckedChange={setIsGradient}
+        {/* Canvas Background */}
+        <div className="space-y-2 mb-6">
+          <Label htmlFor="background-color">Background Color</Label>
+          <div className="flex gap-2 mt-1">
+            <div 
+              className="w-10 h-10 rounded border"
+              style={{ backgroundColor: settings.background }}
+            />
+            <Input
+              id="background-color"
+              type="text"
+              value={settings.background}
+              onChange={(e) => handleBackgroundChange(e.target.value)}
+              placeholder="#FFFFFF or rgba(255,255,255,1)"
+              className="flex-1"
             />
           </div>
         </div>
-
-        {!isGradient ? (
-          <ColorPicker
-            value={color1}
-            onChange={setColor1}
-          />
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
+        
+        <Separator className="my-6" />
+        
+        {/* Export Settings */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium">Export Settings</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="export-format">Format</Label>
               <Select
-                value={gradientType}
-                onValueChange={(value: 'linear' | 'radial') => setGradientType(value)}
+                value={settings.exportFormat}
+                onValueChange={(value) => handleExportSettingChange('exportFormat', value)}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Gradient Type" />
+                <SelectTrigger id="export-format" className="mt-1">
+                  <SelectValue placeholder="Select format" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="linear">Linear</SelectItem>
-                  <SelectItem value="radial">Radial</SelectItem>
+                  <SelectItem value="png">PNG</SelectItem>
+                  <SelectItem value="jpeg">JPEG</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {gradientType === 'linear' && (
-              <div>
-                <div className="flex justify-between">
-                  <Label>Angle</Label>
-                  <span className="text-xs text-muted-foreground">{gradientAngle}°</span>
-                </div>
-                <Slider
-                  value={[gradientAngle]}
-                  min={0}
-                  max={360}
-                  step={1}
-                  onValueChange={(value) => setGradientAngle(value[0])}
-                  className="mt-1.5"
-                />
+            
+            <div>
+              <div className="flex justify-between">
+                <Label htmlFor="export-quality">Quality</Label>
+                <span className="text-xs text-muted-foreground">{settings.exportQuality}%</span>
               </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="text-xs">Color 1</Label>
-                <div className="mt-1">
-                  <ColorPicker
-                    value={color1}
-                    onChange={setColor1}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs">Color 2</Label>
-                <div className="mt-1">
-                  <ColorPicker
-                    value={color2}
-                    onChange={setColor2}
-                  />
-                </div>
-              </div>
+              <Slider
+                id="export-quality"
+                value={[settings.exportQuality]}
+                min={10}
+                max={100}
+                step={5}
+                onValueChange={(value) => handleExportSettingChange('exportQuality', value[0])}
+                className="mt-1.5"
+              />
             </div>
-
-            <div 
-              className="h-6 w-full rounded-md mt-2 border"
-              key={`${gradientType}-${gradientAngle}-${color1}-${color2}`}
-              style={{ 
-                background: gradientType === 'linear' 
-                  ? `linear-gradient(${gradientAngle}deg, ${color1} 0%, ${color2} 100%)`
-                  : `radial-gradient(circle, ${color1} 0%, ${color2} 100%)`
-              }}
-            />
+            
+            <div>
+              <Label htmlFor="export-scale">Scale</Label>
+              <Select
+                value={settings.exportScale.toString()}
+                onValueChange={(value) => handleExportSettingChange('exportScale', parseFloat(value))}
+              >
+                <SelectTrigger id="export-scale" className="mt-1">
+                  <SelectValue placeholder="Select scale" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0.5">0.5x</SelectItem>
+                  <SelectItem value="1">1x</SelectItem>
+                  <SelectItem value="1.5">1.5x</SelectItem>
+                  <SelectItem value="2">2x</SelectItem>
+                  <SelectItem value="3">3x</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        )}
-      </div>
-      
-      <Separator />
-      
-      {/* 边框设置 */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium text-sm">Border</h3>
-          <Switch
-            checked={border.enabled}
-            onCheckedChange={(checked) => onBorderChange({ ...border, enabled: checked })}
-          />
+          
+          <Button 
+            className="w-full mt-4 gap-2" 
+            onClick={onExport}
+          >
+            <Download className="h-4 w-4" />
+            Export Image
+          </Button>
         </div>
-        
-        {border.enabled && (
-          <div className="space-y-3 pt-2">
-            <div>
-              <div className="flex justify-between">
-                <Label>Width</Label>
-                <span className="text-xs text-muted-foreground">{border.width}px</span>
-              </div>
-              <Slider
-                value={[border.width]}
-                min={0}
-                max={10}
-                step={1}
-                onValueChange={(value) => onBorderChange({ ...border, width: value[0] })}
-                className="mt-1.5"
-              />
-            </div>
-            
-            <div>
-              <div className="flex justify-between">
-                <Label>Radius</Label>
-                <span className="text-xs text-muted-foreground">{border.radius}px</span>
-              </div>
-              <Slider
-                value={[border.radius]}
-                min={0}
-                max={30}
-                step={1}
-                onValueChange={(value) => onBorderChange({ ...border, radius: value[0] })}
-                className="mt-1.5"
-              />
-            </div>
-            
-            <div>
-              <Label>Color</Label>
-              <div className="mt-1.5">
-                <ColorPicker
-                  value={border.color}
-                  onChange={(color: string) => onBorderChange({ ...border, color })}
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
