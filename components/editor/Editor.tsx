@@ -2,13 +2,22 @@ import React, { useState, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Palette } from 'lucide-react';
 import Canvas from './Canvas';
 import CanvasControls from './CanvasControls';
 import BoxControls from './BoxControls';
 import Loading from '@/components/ui/Loading';
 import { BoxData, CanvasSettings } from './types';
 import { Button } from '@/components/ui/button';
+import backgroundPresets from './background-presets';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DEFAULT_BOX_STYLE = {
   backgroundColor: 'white',
@@ -354,6 +363,36 @@ const EditorV2: React.FC<EditorV2Props> = () => {
             <ChevronLeft className={`h-4 w-4 transition-transform ${!leftPanelOpen ? 'rotate-180' : ''}`} />
           </Button>
         </div>
+        
+        {/* 背景预设下拉菜单 */}
+        <div className="flex items-center space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Palette className="h-4 w-4" />
+                <span>背景预设</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center">
+              <DropdownMenuLabel>选择画布背景</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {backgroundPresets.map((preset, index) => (
+                <DropdownMenuItem 
+                  key={index} 
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => handleCanvasSettingChange({ background: preset.value })}
+                >
+                  <div 
+                    className="w-5 h-5 rounded-sm" 
+                    style={{ background: preset.value }}
+                  />
+                  <span>{preset.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        
         <div className="flex items-center space-x-2">
           <Button
             variant="ghost"

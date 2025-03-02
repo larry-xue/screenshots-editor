@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Download } from 'lucide-react';
 import { CanvasSettings } from './types';
+import ColorPicker from "@/components/ui/color-picker";
 
 interface CanvasControlsProps {
   settings: CanvasSettings;
@@ -108,21 +109,12 @@ const CanvasControls: React.FC<CanvasControlsProps> = ({
         
         {/* Canvas Background */}
         <div className="space-y-2 mb-6">
-          <Label htmlFor="background-color">Background Color</Label>
-          <div className="flex gap-2 mt-1">
-            <div 
-              className="w-10 h-10 rounded border"
-              style={{ backgroundColor: settings.background }}
-            />
-            <Input
-              id="background-color"
-              type="text"
-              value={settings.background}
-              onChange={(e) => handleBackgroundChange(e.target.value)}
-              placeholder="#FFFFFF or rgba(255,255,255,1)"
-              className="flex-1"
-            />
-          </div>
+          <ColorPicker
+            id="background-color"
+            label="Background Color"
+            value={settings.background}
+            onChange={handleBackgroundChange}
+          />
         </div>
         
         <Separator className="my-6" />

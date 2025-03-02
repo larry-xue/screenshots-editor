@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { BoxData } from './types';
 import { Image, Type, Trash2, Plus, MaximizeIcon, MinimizeIcon, Move } from 'lucide-react';
+import ColorPicker from "@/components/ui/color-picker";
 
 interface BoxControlsProps {
   selectedBox: BoxData | null;
@@ -242,21 +243,12 @@ const BoxControls: React.FC<BoxControlsProps> = ({
               
               {selectedBox.style.hasBackground && (
                 <div className="space-y-2">
-                  <Label htmlFor="bg-color">Background Color</Label>
-                  <div className="flex gap-2 mt-1">
-                    <div 
-                      className="w-10 h-10 rounded border"
-                      style={{ backgroundColor: selectedBox.style.backgroundColor }}
-                    />
-                    <Input
-                      id="bg-color"
-                      type="text"
-                      value={selectedBox.style.backgroundColor}
-                      onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
-                      placeholder="#FFFFFF or rgba(255,255,255,1)"
-                      className="flex-1"
-                    />
-                  </div>
+                  <ColorPicker
+                    id="bg-color"
+                    label="Background Color"
+                    value={selectedBox.style.backgroundColor}
+                    onChange={(color) => handleStyleChange('backgroundColor', color)}
+                  />
                 </div>
               )}
             </div>
