@@ -15,6 +15,7 @@ interface CanvasProps {
   onBoxResize: (id: string, width: number, height: number) => void;
   onAddBox: () => void;
   displayScale?: number;
+  isExporting?: boolean;
 }
 
 const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
@@ -27,7 +28,8 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
   onBoxMove,
   onBoxResize,
   onAddBox,
-  displayScale = 1
+  displayScale = 1,
+  isExporting = false
 }, ref) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
@@ -48,9 +50,11 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
     <div className="flex items-center justify-center w-full h-full p-4 overflow-auto">
       <div className="relative">
         {/* Display info about actual dimensions */}
-        <div className="absolute -top-8 left-0 text-xs text-muted-foreground">
-          Canvas: {width} x {height}px (displayed at {Math.round(displayScale * 100)}%)
-        </div>
+        {!isExporting && (
+          <div className="absolute -top-8 left-0 text-xs text-muted-foreground">
+            Canvas: {width} x {height}px (displayed at {Math.round(displayScale * 100)}%)
+          </div>
+        )}
         
         <div 
           ref={ref}
@@ -76,11 +80,12 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
               onMove={(x, y) => onBoxMove(box.id, x, y)}
               onResize={(width, height) => onBoxResize(box.id, width, height)}
               displayScale={displayScale}
+              isExporting={isExporting}
             />
           ))}
 
           {/* Add empty state when no boxes */}
-          {boxes.length === 0 && (
+          {boxes.length === 0 && !isExporting && (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <p className="text-muted-foreground mb-4">Canvas is empty</p>
               <Button onClick={onAddBox} variant="outline">

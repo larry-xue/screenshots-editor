@@ -35,6 +35,7 @@ interface EditorV2Props {}
 const EditorV2: React.FC<EditorV2Props> = () => {
   // Canvas state
   const [canvasSettings, setCanvasSettings] = useState<CanvasSettings>(DEFAULT_CANVAS_SETTINGS);
+  const [isExporting, setIsExporting] = useState(false);
   
   // Boxes state
   const [boxes, setBoxes] = useState<BoxData[]>([]);
@@ -233,6 +234,8 @@ const EditorV2: React.FC<EditorV2Props> = () => {
     try {
       return toast.promise(
         (async () => {
+          setIsExporting(true);
+          
           // 创建html2canvas配置
           const scale = canvasSettings.exportScale;
           const config = {
@@ -293,11 +296,18 @@ const EditorV2: React.FC<EditorV2Props> = () => {
         })(),
         {
           loading: "Generating image...",
-          success: (data) => data,
-          error: "Failed to download image",
+          success: (data) => {
+            setIsExporting(false);
+            return data;
+          },
+          error: (error) => {
+            setIsExporting(false);
+            return "Failed to download image";
+          },
         }
       );
     } catch (error) {
+      setIsExporting(false);
       console.error("Error downloading image:", error);
       throw error;
     }
@@ -328,6 +338,7 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           onBoxResize={handleBoxResize}
           onAddBox={handleAddTextBox}
           displayScale={canvasSettings.displayScale}
+          isExporting={isExporting}
         />
       </div>
       

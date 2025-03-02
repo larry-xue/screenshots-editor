@@ -9,6 +9,7 @@ interface BoxProps {
   onMove: (x: number, y: number) => void;
   onResize: (width: number, height: number) => void;
   displayScale?: number;
+  isExporting?: boolean;
 }
 
 const Box: React.FC<BoxProps> = ({
@@ -17,7 +18,8 @@ const Box: React.FC<BoxProps> = ({
   onSelect,
   onMove,
   onResize,
-  displayScale = 1
+  displayScale = 1,
+  isExporting = false
 }) => {
   // 对图片和文本使用不同的ref类型
   const textBoxRef = useRef<HTMLDivElement>(null);
@@ -181,7 +183,7 @@ const Box: React.FC<BoxProps> = ({
 
   // 渲染调整大小的手柄
   const renderResizeHandles = () => {
-    if (!isSelected) return null;
+    if (!isSelected || isExporting) return null;
     
     const handlePositions = [
       'top-left', 'top-right', 'bottom-left', 'bottom-right'
@@ -195,7 +197,8 @@ const Box: React.FC<BoxProps> = ({
           className={cn(
             "absolute w-3 h-3 bg-white border border-blue-500",
             "hover:bg-blue-500 transition-colors duration-200",
-            data.type === 'text' ? 'opacity-0 group-hover:opacity-100' : ''
+            // 移除 text box 的 opacity 过渡效果
+            isResizing ? 'opacity-100' : (data.type === 'text' ? 'opacity-0 group-hover:opacity-100' : '')
           )}
           style={{
             top: vertical === 'top' ? '0' : 'auto',
@@ -225,8 +228,8 @@ const Box: React.FC<BoxProps> = ({
           alt="Box content"
           className={cn(
             'box-element w-full h-full',
-            'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
-            isSelected && 'ring-2 ring-blue-500'
+            !isExporting && 'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
+            isSelected && !isExporting && 'ring-2 ring-blue-500'
           )}
           style={{
             objectPosition: 'center',
@@ -237,12 +240,12 @@ const Box: React.FC<BoxProps> = ({
             borderStyle: data.style.hasBorder ? 'solid' : 'none',
             borderRadius: `${data.style.borderRadius}px`,
             boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
-            cursor: isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default'),
+            cursor: isExporting ? 'default' : (isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default')),
           }}
           onClick={handleBoxClick}
           onMouseDown={handleMouseDown}
           draggable={false}
-          title={isSelected ? "按住Shift拖动" : ""}
+          title={isSelected && !isExporting ? "按住Shift拖动" : ""}
         />
         {renderResizeHandles()}
       </div>
@@ -259,8 +262,8 @@ const Box: React.FC<BoxProps> = ({
       <div
         className={cn(
           'box-element w-full h-full',
-          'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
-          isSelected && 'ring-2 ring-blue-500'
+          !isExporting && 'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
+          isSelected && !isExporting && 'ring-2 ring-blue-500'
         )}
         style={{
           backgroundColor: data.type === 'text' && data.style.hasBackground ? data.style.backgroundColor : 'transparent',
@@ -270,13 +273,13 @@ const Box: React.FC<BoxProps> = ({
           borderRadius: `${data.style.borderRadius}px`,
           opacity: data.style.opacity,
           boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
-          cursor: isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default'),
+          cursor: isExporting ? 'default' : (isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default')),
           overflow: 'hidden',
           color: data.type === 'text' ? data.style.textColor : 'inherit',
         }}
         onClick={handleBoxClick}
         onMouseDown={handleMouseDown}
-        title={isSelected ? "按住Shift拖动" : ""}
+        title={isSelected && !isExporting ? "按住Shift拖动" : ""}
       >
         <div className="w-full h-full p-2 overflow-hidden">
           {data.content}
