@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { BoxData } from './types';
+import Shell from './Shell';
 
 interface BoxProps {
   data: BoxData;
@@ -172,13 +173,14 @@ const Box: React.FC<BoxProps> = ({
   const baseBoxStyle = {
     left: `${data.x * displayScale}px`,
     top: `${data.y * displayScale}px`,
-    width: `${data.width * displayScale}px`,
-    height: `${data.height * displayScale}px`,
+    width: `${data.width}px`,
+    height: `${data.height}px`,
     position: 'absolute' as const,
     transformOrigin: 'top left',
     userSelect: 'none' as const, // 禁止文本选择
     zIndex: data.zIndex, // 添加 z-index 支持
     transition: 'box-shadow 0.2s ease', // 添加过渡效果
+    transform: `scale(${displayScale})`, // 添加缩放变换
   };
 
   // 渲染调整大小的手柄
@@ -208,6 +210,7 @@ const Box: React.FC<BoxProps> = ({
             cursor: `${position}-resize`,
             zIndex: 10,
             transform: `translate(${horizontal === 'left' ? '-50%' : '50%'}, ${vertical === 'top' ? '-50%' : '50%'})`,
+            // 不需要特别修改，因为手柄是相对于盒子的，会随盒子一起缩放
           }}
           onMouseDown={handleResizeStart}
         />
@@ -217,36 +220,42 @@ const Box: React.FC<BoxProps> = ({
 
   // 为图片框渲染
   if (data.type === 'image') {
+    const imageContent = (
+      <img
+        ref={imageBoxRef}
+        src={data.content}
+        alt="Box content"
+        className={cn(
+          'box-element w-full h-full',
+          !isExporting && 'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
+          isSelected && !isExporting && 'ring-2 ring-blue-500'
+        )}
+        style={{
+          objectPosition: 'center',
+          objectFit: 'cover',
+          opacity: data.style.opacity,
+          borderWidth: data.style.hasBorder ? `${data.style.borderWidth}px` : '0',
+          borderColor: data.style.hasBorder ? data.style.borderColor : 'transparent',
+          borderStyle: data.style.hasBorder ? 'solid' : 'none',
+          borderRadius: `${data.style.borderRadius}px`,
+          boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
+          cursor: isExporting ? 'default' : (isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default')),
+        }}
+        onClick={handleBoxClick}
+        onMouseDown={handleMouseDown}
+        draggable={false}
+        title={isSelected && !isExporting ? "按住Shift拖动" : ""}
+      />
+    );
+
     return (
       <div 
         className="relative group"
         style={baseBoxStyle}
       >
-        <img
-          ref={imageBoxRef}
-          src={data.content}
-          alt="Box content"
-          className={cn(
-            'box-element w-full h-full',
-            !isExporting && 'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
-            isSelected && !isExporting && 'ring-2 ring-blue-500'
-          )}
-          style={{
-            objectPosition: 'center',
-            objectFit: 'cover',
-            opacity: data.style.opacity,
-            borderWidth: data.style.hasBorder ? `${data.style.borderWidth}px` : '0',
-            borderColor: data.style.hasBorder ? data.style.borderColor : 'transparent',
-            borderStyle: data.style.hasBorder ? 'solid' : 'none',
-            borderRadius: `${data.style.borderRadius}px`,
-            boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
-            cursor: isExporting ? 'default' : (isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default')),
-          }}
-          onClick={handleBoxClick}
-          onMouseDown={handleMouseDown}
-          draggable={false}
-          title={isSelected && !isExporting ? "按住Shift拖动" : ""}
-        />
+        <Shell shellSettings={data.shellSettings}>
+          {imageContent}
+        </Shell>
         {renderResizeHandles()}
       </div>
     );
@@ -275,13 +284,31 @@ const Box: React.FC<BoxProps> = ({
           boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
           cursor: isExporting ? 'default' : (isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default')),
           overflow: 'hidden',
-          color: data.type === 'text' ? data.style.textColor : 'inherit',
+          color: data.type === 'text' ? (data.style.color || data.style.textColor) : 'inherit',
         }}
         onClick={handleBoxClick}
         onMouseDown={handleMouseDown}
         title={isSelected && !isExporting ? "按住Shift拖动" : ""}
       >
-        <div className="w-full h-full p-2 overflow-hidden">
+        <div 
+          className="w-full h-full overflow-hidden"
+          style={{
+            padding: data.style.padding || '8px',
+            fontSize: data.style.fontSize || '24px',
+            fontWeight: data.style.fontWeight || 'normal',
+            fontFamily: data.style.fontFamily || 'sans-serif',
+            textAlign: (data.style.textAlign as 'left' | 'center' | 'right' | undefined) || 'left',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            background: data.style.color?.includes('gradient') ? data.style.color : 'none',
+            WebkitBackgroundClip: data.style.color?.includes('gradient') ? 'text' : 'unset',
+            WebkitTextFillColor: data.style.color?.includes('gradient') ? 'transparent' : 'unset',
+            color: !data.style.color?.includes('gradient') ? (data.style.color || data.style.textColor) : 'inherit',
+            letterSpacing: data.style.color?.includes('gradient') ? '0.015em' : 'normal',
+            textShadow: data.style.color === 'transparent' ? `0 0 1px ${data.style.borderColor}, 0 0 1px ${data.style.borderColor}` : 'none',
+            lineHeight: 1.2
+          }}
+        >
           {data.content}
         </div>
       </div>

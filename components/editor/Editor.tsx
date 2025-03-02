@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
@@ -6,8 +6,7 @@ import { ChevronLeft, ChevronRight, Download, Palette } from 'lucide-react';
 import Canvas from './Canvas';
 import CanvasControls from './CanvasControls';
 import BoxControls from './BoxControls';
-import Loading from '@/components/ui/Loading';
-import { BoxData, CanvasSettings } from './types';
+import { BoxData, CanvasSettings, ShellType } from './types';
 import { Button } from '@/components/ui/button';
 import backgroundPresets from './background-presets';
 import {
@@ -20,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const DEFAULT_BOX_STYLE = {
-  backgroundColor: 'white',
+  backgroundColor: 'transparent',
   borderWidth: 1,
   borderColor: '#e2e8f0',
   borderRadius: 8,
@@ -30,6 +29,20 @@ const DEFAULT_BOX_STYLE = {
   hasBorder: false,
   hasBackground: false,
   textColor: '#000000',
+  fontSize: '24px',
+  fontWeight: 'normal',
+  fontFamily: 'sans-serif',
+  color: '#000000',
+  textAlign: 'left',
+  padding: '12px'
+};
+
+// Configuración por defecto para el shell
+const DEFAULT_SHELL_SETTINGS = {
+  type: 'none' as ShellType,
+  title: 'Untitled',
+  showControls: true,
+  color: '#f0f0f0'
 };
 
 const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {
@@ -74,8 +87,9 @@ const EditorV2: React.FC<EditorV2Props> = () => {
       width: 200,
       height: 100,
       type: 'text',
-      content: 'Text Box Content',
+      content: 'Edit this text',
       style: { ...DEFAULT_BOX_STYLE },
+      shellSettings: { ...DEFAULT_SHELL_SETTINGS },
       zIndex: maxZIndex + 1
     };
 
@@ -152,6 +166,7 @@ const EditorV2: React.FC<EditorV2Props> = () => {
             width: img.width,
             height: img.height
           },
+          shellSettings: { ...DEFAULT_SHELL_SETTINGS },
           zIndex: maxZIndex + 1
         };
 
@@ -212,9 +227,23 @@ const EditorV2: React.FC<EditorV2Props> = () => {
 
   // Handle updating box property
   const handleBoxPropertyChange = (id: string, property: string, value: any) => {
-    setBoxes(boxes.map(box =>
-      box.id === id ? { ...box, [property]: value } : box
-    ));
+    setBoxes(boxes.map(box => {
+      if (box.id === id) {
+        // Para shellSettings, asegúrate de que se fusione correctamente con valores existentes
+        if (property === 'shellSettings') {
+          return { 
+            ...box, 
+            [property]: { 
+              ...(box.shellSettings || DEFAULT_SHELL_SETTINGS),
+              ...value 
+            } 
+          };
+        }
+        // Para otras propiedades, simplemente actualizar el valor
+        return { ...box, [property]: value };
+      }
+      return box;
+    }));
   };
 
   // Handle updating box content
@@ -235,9 +264,9 @@ const EditorV2: React.FC<EditorV2Props> = () => {
   };
 
   // Handle canvas setting changes
-  const handleCanvasSettingChange = (settings: Partial<CanvasSettings>) => {
-    setCanvasSettings({ ...canvasSettings, ...settings });
-  };
+  const handleCanvasSettingChange = useCallback((settings: Partial<CanvasSettings>) => {
+    setCanvasSettings(prevSettings => ({ ...prevSettings, ...settings }));
+  }, []);
 
   // Handle export canvas as image
   const handleExportCanvas = async () => {
@@ -259,7 +288,7 @@ const EditorV2: React.FC<EditorV2Props> = () => {
             }));
             
             // 等待DOM更新
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             // 创建html2canvas配置
             const scale = canvasSettings.exportScale;
@@ -329,7 +358,6 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           }
         })(),
         {
-          loading: "Generating image...",
           success: (data) => {
             setIsExporting(false);
             return data;
@@ -349,6 +377,42 @@ const EditorV2: React.FC<EditorV2Props> = () => {
 
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  // Reference to the canvas container for wheel events
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+  // Handle wheel zoom with non-passive event listener
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Only respond to ctrl+wheel events
+      if (e.ctrlKey) {
+        e.preventDefault(); // Prevent browser zoom
+        
+        // Determine zoom direction
+        const zoomDirection = e.deltaY < 0 ? 1 : -1;
+        
+        // Calculate new display scale
+        const step = 0.05;
+        const newScale = Math.min(
+          Math.max(canvasSettings.displayScale + zoomDirection * step, 0.1), // Min scale: 10%
+          1.5 // Max scale: 150%
+        );
+        
+        // Update canvas settings with new scale
+        handleCanvasSettingChange({ displayScale: newScale });
+      }
+    };
+
+    const canvasContainer = canvasContainerRef.current;
+    if (canvasContainer) {
+      // Add non-passive wheel event listener
+      canvasContainer.addEventListener('wheel', handleWheel, { passive: false });
+      
+      // Cleanup
+      return () => {
+        canvasContainer.removeEventListener('wheel', handleWheel);
+      };
+    }
+  }, [canvasSettings.displayScale, handleCanvasSettingChange]);
 
   return (
     <div className="flex flex-col h-full">
@@ -422,7 +486,10 @@ const EditorV2: React.FC<EditorV2Props> = () => {
         </div>
 
         {/* Main Canvas Area */}
-        <div className="flex-1 overflow-auto relative bg-gray-100">
+        <div 
+          ref={canvasContainerRef}
+          className="flex-1 overflow-auto relative bg-gray-100"
+        >
           <Canvas
             ref={canvasRef}
             width={canvasSettings.width}
@@ -469,11 +536,6 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           onChange={handleFileChange}
         />
       </div>
-
-      {/* Loading overlay */}
-      {isExporting && (
-        <Loading message="Exporting image..." />
-      )}
     </div>
   );
 };

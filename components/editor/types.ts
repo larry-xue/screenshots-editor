@@ -8,7 +8,19 @@ export interface BoxData {
   content: string;
   style: BoxStyle;
   imageSettings?: ImageSettings;
+  shellSettings?: ShellSettings;
   zIndex: number;
+}
+
+// Tipos de shell/marco disponibles
+export type ShellType = 'none' | 'browser' | 'phone' | 'tablet';
+
+// Configuración para el shell/marco
+export interface ShellSettings {
+  type: ShellType;
+  title?: string;
+  showControls?: boolean;
+  color?: string;
 }
 
 export interface ImageSettings {
@@ -29,6 +41,12 @@ export interface BoxStyle {
   hasBorder: boolean;
   hasBackground: boolean;
   textColor?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  fontFamily?: string;
+  color?: string;
+  textAlign?: string;
+  padding?: string;
 }
 
 export interface CanvasSettings {

@@ -53,6 +53,74 @@ const PRESET_COLORS = [
   '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'
 ];
 
+// Background presets for common background designs
+const BACKGROUND_PRESETS = [
+  {
+    name: "Blue-Purple Gradient",
+    value: "linear-gradient(to right, #4a00e0, #8e2de2)"
+  },
+  {
+    name: "Cyan-Orange Gradient",
+    value: "linear-gradient(to right, #00c6ff, #f06d06)"
+  },
+  {
+    name: "Pink-Blue Gradient",
+    value: "linear-gradient(to right, #fc466b, #3f5efb)"
+  },
+  {
+    name: "Green-Teal Gradient",
+    value: "linear-gradient(to right, #11998e, #38ef7d)"
+  },
+  {
+    name: "Sunset Gradient",
+    value: "linear-gradient(to right, #ff512f, #f09819)"
+  },
+  {
+    name: "Deep Sea Gradient",
+    value: "linear-gradient(to right, #1a2980, #26d0ce)"
+  },
+  {
+    name: "Violet Gradient",
+    value: "linear-gradient(to right, #834d9b, #d04ed6)"
+  },
+  {
+    name: "Dark Gold Gradient",
+    value: "linear-gradient(to right, #141e30, #f7b733)"
+  },
+  {
+    name: "Rainbow Gradient",
+    value: "linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)"
+  },
+  {
+    name: "Aurora Gradient",
+    value: "radial-gradient(circle, #80d0c7 0%, #0093e9 100%)"
+  },
+  {
+    name: "Soft Rose Radial",
+    value: "radial-gradient(circle, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%)"
+  },
+  {
+    name: "Aqua Burst",
+    value: "radial-gradient(circle, #00d2ff 0%, #3a7bd5 100%)"
+  },
+  {
+    name: "Mystic Glow",
+    value: "radial-gradient(circle, #5f2c82 0%, #49a09d 100%)"
+  },
+  {
+    name: "Sunset Sphere",
+    value: "radial-gradient(circle, #f83600 0%, #f9d423 100%)"
+  },
+  {
+    name: "Emerald Radial",
+    value: "radial-gradient(circle, #43e97b 0%, #38f9d7 100%)"
+  },
+  {
+    name: "Purple Haze",
+    value: "radial-gradient(circle, #667eea 0%, #764ba2 100%)"
+  }
+];
+
 // Helper function to convert background config to CSS value
 export const backgroundConfigToCss = (config: BackgroundConfig): string => {
   if (config.type === 'solid') {
@@ -86,69 +154,75 @@ export const cssToBackgroundConfig = (cssValue: string): BackgroundConfig => {
     const isRadial = cssValue.includes('radial-gradient');
     
     if (isLinear) {
-      // Parse linear gradient
-      const match = cssValue.match(/linear-gradient\((.*?),(.*)\)/);
-      
-      if (match) {
-        const direction = match[1].trim() as GradientDirection;
-        const stopsStr = match[2].trim();
+      try {
+        // Parse linear gradient
+        const match = cssValue.match(/linear-gradient\((.*?),(.*)\)/);
         
-        // Parse color stops
-        const stopRegex = /([^,]+) (\d+)%/g;
-        const stops: ColorStop[] = [];
-        let stopMatch;
-        
-        while ((stopMatch = stopRegex.exec(stopsStr)) !== null) {
-          stops.push({
-            color: stopMatch[1].trim(),
-            position: parseInt(stopMatch[2], 10)
-          });
-        }
-        
-        return {
-          type: 'gradient',
-          color: stops[0]?.color || '#ffffff',
-          gradient: {
-            type: 'linear',
-            direction,
-            stops: stops.length ? stops : [
-              { color: '#ffffff', position: 0 },
-              { color: '#000000', position: 100 }
-            ]
+        if (match) {
+          const direction = match[1].trim() as GradientDirection;
+          const stopsStr = match[2].trim();
+          
+          // Extract all colors from gradient string
+          const colorMatches = stopsStr.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|rgba?\([^)]+\)/g);
+          
+          if (colorMatches && colorMatches.length > 0) {
+            const stops: ColorStop[] = [];
+            const colorCount = colorMatches.length;
+            
+            // Distribute stops evenly along the gradient
+            colorMatches.forEach((color, index) => {
+              const position = Math.round((index / (colorCount - 1)) * 100);
+              stops.push({ color, position });
+            });
+            
+            return {
+              type: 'gradient',
+              color: stops[0].color,
+              gradient: {
+                type: 'linear',
+                direction,
+                stops
+              }
+            };
           }
-        };
+        }
+      } catch (error) {
+        console.error('Error parsing linear gradient:', error);
       }
     } else if (isRadial) {
-      // Parse radial gradient
-      const match = cssValue.match(/radial-gradient\(circle,(.*)\)/);
-      
-      if (match) {
-        const stopsStr = match[1].trim();
+      try {
+        // Parse radial gradient
+        const match = cssValue.match(/radial-gradient\(circle,(.*)\)/);
         
-        // Parse color stops
-        const stopRegex = /([^,]+) (\d+)%/g;
-        const stops: ColorStop[] = [];
-        let stopMatch;
-        
-        while ((stopMatch = stopRegex.exec(stopsStr)) !== null) {
-          stops.push({
-            color: stopMatch[1].trim(),
-            position: parseInt(stopMatch[2], 10)
-          });
-        }
-        
-        return {
-          type: 'gradient',
-          color: stops[0]?.color || '#ffffff',
-          gradient: {
-            type: 'radial',
-            direction: 'to right' as GradientDirection,
-            stops: stops.length ? stops : [
-              { color: '#ffffff', position: 0 },
-              { color: '#000000', position: 100 }
-            ]
+        if (match) {
+          const stopsStr = match[1].trim();
+          
+          // Extract all colors from gradient string
+          const colorMatches = stopsStr.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|rgba?\([^)]+\)/g);
+          
+          if (colorMatches && colorMatches.length > 0) {
+            const stops: ColorStop[] = [];
+            const colorCount = colorMatches.length;
+            
+            // Distribute stops evenly along the gradient
+            colorMatches.forEach((color, index) => {
+              const position = Math.round((index / (colorCount - 1)) * 100);
+              stops.push({ color, position });
+            });
+            
+            return {
+              type: 'gradient',
+              color: stops[0].color,
+              gradient: {
+                type: 'radial',
+                direction: 'to right' as GradientDirection,
+                stops
+              }
+            };
           }
-        };
+        }
+      } catch (error) {
+        console.error('Error parsing radial gradient:', error);
       }
     }
   }
@@ -195,18 +269,63 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
   // Parse the initial value into our config format
   const [config, setConfig] = useState<BackgroundConfig>(cssToBackgroundConfig(value));
   const [activeTab, setActiveTab] = useState<string>(config.type);
+  // Keep the original CSS string for display purposes when it's a gradient
+  const [originalCssString, setOriginalCssString] = useState<string>(value);
   
   // When external value changes, update our internal state
   useEffect(() => {
     setConfig(cssToBackgroundConfig(value));
     setActiveTab(cssToBackgroundConfig(value).type);
+    setOriginalCssString(value);
   }, [value]);
+
+  // When component mounts, check if we should apply a default preset
+  useEffect(() => {
+    // Only apply the default preset if the current value is the default white color
+    // and there's at least one preset available
+    if (value === '#ffffff' && BACKGROUND_PRESETS.length > 0) {
+      // Apply the first preset
+      applyBackgroundPreset(BACKGROUND_PRESETS[0].value);
+    }
+  }, []); // Only run once on component mount
 
   // Update the CSS when config changes
   const handleConfigChange = (newConfig: BackgroundConfig) => {
     setConfig(newConfig);
     const cssValue = backgroundConfigToCss(newConfig);
+    setOriginalCssString(cssValue);
     onChange(cssValue);
+  };
+
+  // Apply a background preset
+  const applyBackgroundPreset = (preset: string) => {
+    // Always use the original string for display
+    setOriginalCssString(preset);
+    
+    // For gradients with many color stops, use the direct string value
+    const hasMultipleStops = 
+      (preset.includes('gradient') && 
+       (preset.match(/#/g) || []).length > 2) || 
+      preset.includes('rainbow');
+      
+    if (hasMultipleStops) {
+      // Use original preset string for complex gradients
+      onChange(preset);
+      setActiveTab('gradient');
+      
+      // Still parse for UI display, but don't rely on the parsing for the actual CSS
+      const parsedConfig = cssToBackgroundConfig(preset);
+      setConfig(parsedConfig);
+    } else {
+      // Parse the preset into a background config
+      const newConfig = cssToBackgroundConfig(preset);
+      setConfig(newConfig);
+      setActiveTab(newConfig.type);
+      
+      // Use our parsed version for simpler gradients
+      const cssValue = backgroundConfigToCss(newConfig);
+      onChange(cssValue);
+    }
   };
 
   // Add new color stop to gradient
@@ -339,7 +458,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                 className="w-6 h-6 rounded border overflow-hidden" 
                 style={{ background: value }}
               />
-              <span className="text-sm truncate max-w-[180px]">{value}</span>
+              <span className="text-sm truncate max-w-[180px]">
+                {value.length > 30 
+                  ? value.substring(0, 30) + '...' 
+                  : value}
+              </span>
             </div>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
@@ -398,6 +521,38 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                     ))}
                   </div>
                 </div>
+                
+                {/* Background Presets */}
+                <div className="space-y-2 mt-4">
+                  <Label>Background Presets</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {BACKGROUND_PRESETS.map((preset, index) => {
+                      // Check if this preset is selected
+                      const isSelected = value === preset.value;
+                      
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          className={`rounded border relative overflow-hidden ${isSelected ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                          style={{ 
+                            background: preset.value
+                          }}
+                          onClick={() => applyBackgroundPreset(preset.value)}
+                          aria-label={preset.name}
+                        >
+                          <div className="h-12 w-full"></div>
+                          <div className="text-xs px-2 py-1 bg-white/80 text-black truncate">
+                            {preset.name}
+                          </div>
+                          {isSelected && (
+                            <Check className="h-5 w-5 absolute top-[24px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.5)]" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </TabsContent>
               
               <TabsContent value="gradient" className="space-y-4">
@@ -450,12 +605,44 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                   </div>
                 )}
                 
+                {/* Background Presets */}
+                <div className="space-y-2 mt-4">
+                  <Label>Gradient Presets</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {BACKGROUND_PRESETS.filter(preset => preset.value.includes('gradient')).map((preset, index) => {
+                      // Check if this preset is selected
+                      const isSelected = value === preset.value;
+                      
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          className={`rounded border relative overflow-hidden ${isSelected ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                          style={{ 
+                            background: preset.value
+                          }}
+                          onClick={() => applyBackgroundPreset(preset.value)}
+                          aria-label={preset.name}
+                        >
+                          <div className="h-12 w-full"></div>
+                          <div className="text-xs px-2 py-1 bg-white/80 text-black truncate">
+                            {preset.name}
+                          </div>
+                          {isSelected && (
+                            <Check className="h-5 w-5 absolute top-[24px] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.5)]" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                
                 {/* Gradient Preview */}
                 <div>
                   <Label>Preview</Label>
                   <div 
                     className="h-12 rounded border mt-1"
-                    style={{ background: backgroundConfigToCss(config) }}
+                    style={{ background: originalCssString }}
                   />
                 </div>
                 

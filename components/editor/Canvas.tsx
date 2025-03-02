@@ -53,12 +53,13 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({
         {!isExporting && (
           <div className="absolute -top-8 left-0 text-xs text-muted-foreground">
             Canvas: {width} x {height}px (displayed at {Math.round(displayScale * 100)}%)
+            <span className="ml-2 text-xs opacity-70">Use Ctrl+Mouse Wheel to zoom</span>
           </div>
         )}
         
         <div 
           ref={ref}
-          className="canvas-container relative shadow-lg transform-gpu"
+          className={`canvas-container relative transform-gpu ${isExporting ? '' : 'shadow-lg'}`}
           style={{
             width: `${scaledWidth}px`,
             height: `${scaledHeight}px`,
