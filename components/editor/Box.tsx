@@ -36,6 +36,32 @@ const Box: React.FC<BoxProps> = ({
   const [imageDragging, setImageDragging] = useState(false);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  
+  // State for shift key
+  const [isShiftPressed, setIsShiftPressed] = useState(false);
+
+  // Handle shift key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   // Handle box click
   const handleBoxClick = (e: React.MouseEvent) => {
@@ -150,96 +176,113 @@ const Box: React.FC<BoxProps> = ({
     transformOrigin: 'top left',
     userSelect: 'none' as const, // 禁止文本选择
     zIndex: data.zIndex, // 添加 z-index 支持
-  };
-
-  // 文本框样式
-  const textBoxStyle = {
-    ...baseBoxStyle,
-    backgroundColor: data.style.backgroundColor,
-    borderWidth: `${data.style.borderWidth}px`,
-    borderColor: data.style.borderColor,
-    borderStyle: 'solid',
-    borderRadius: `${data.style.borderRadius}px`,
-    opacity: data.style.opacity,
-    boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
-    cursor: isDragging ? 'grabbing' : (isSelected ? 'grab' : 'default'),
-    overflow: 'hidden',
-  };
-
-  // 图片框样式 - 始终使用 cover 模式
-  const getImageBoxStyle = () => {
-    return {
-      ...baseBoxStyle,
-      objectPosition: 'center',
-      objectFit: 'cover' as const,  // 始终使用 cover 模式
-      opacity: data.style.opacity,
-      borderWidth: `${data.style.borderWidth}px`,
-      borderColor: data.style.borderColor,
-      borderStyle: 'solid',
-      borderRadius: `${data.style.borderRadius}px`,
-      boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
-      cursor: isDragging ? 'grabbing' : (isSelected ? 'grab' : 'default'),
-      backgroundColor: data.style.backgroundColor,
-    };
+    transition: 'box-shadow 0.2s ease', // 添加过渡效果
   };
 
   // 渲染调整大小的手柄
-  const renderResizeHandle = () => {
+  const renderResizeHandles = () => {
     if (!isSelected) return null;
     
-    return (
-      <div
-        className="resize-handle absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize"
-        style={{
-          bottom: 0,
-          right: 0,
-          zIndex: 10
-        }}
-        onMouseDown={handleResizeStart}
-      />
-    );
+    const handlePositions = [
+      'top-left', 'top-right', 'bottom-left', 'bottom-right'
+    ];
+    
+    return handlePositions.map(position => {
+      const [vertical, horizontal] = position.split('-');
+      return (
+        <div
+          key={position}
+          className={cn(
+            "absolute w-3 h-3 bg-white border border-blue-500",
+            "hover:bg-blue-500 transition-colors duration-200",
+            data.type === 'text' ? 'opacity-0 group-hover:opacity-100' : ''
+          )}
+          style={{
+            top: vertical === 'top' ? '0' : 'auto',
+            bottom: vertical === 'bottom' ? '0' : 'auto',
+            left: horizontal === 'left' ? '0' : 'auto',
+            right: horizontal === 'right' ? '0' : 'auto',
+            cursor: `${position}-resize`,
+            zIndex: 10,
+            transform: `translate(${horizontal === 'left' ? '-50%' : '50%'}, ${vertical === 'top' ? '-50%' : '50%'})`,
+          }}
+          onMouseDown={handleResizeStart}
+        />
+      );
+    });
   };
 
   // 为图片框渲染
   if (data.type === 'image') {
     return (
-      <>
+      <div 
+        className="relative group"
+        style={baseBoxStyle}
+      >
         <img
           ref={imageBoxRef}
           src={data.content}
           alt="Box content"
           className={cn(
-            'box-element',
-            isSelected && 'ring-2 ring-blue-500',
+            'box-element w-full h-full',
+            'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
+            isSelected && 'ring-2 ring-blue-500'
           )}
-          style={getImageBoxStyle()}
+          style={{
+            objectPosition: 'center',
+            objectFit: 'cover',
+            opacity: data.style.opacity,
+            borderWidth: data.style.hasBorder ? `${data.style.borderWidth}px` : '0',
+            borderColor: data.style.hasBorder ? data.style.borderColor : 'transparent',
+            borderStyle: data.style.hasBorder ? 'solid' : 'none',
+            borderRadius: `${data.style.borderRadius}px`,
+            boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
+            cursor: isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default'),
+          }}
           onClick={handleBoxClick}
           onMouseDown={handleMouseDown}
           draggable={false}
           title={isSelected ? "按住Shift拖动" : ""}
         />
-        {renderResizeHandle()}
-      </>
+        {renderResizeHandles()}
+      </div>
     );
   }
 
   // 为文本框渲染
   return (
-    <div
+    <div 
       ref={textBoxRef}
-      className={cn(
-        'box-element',
-        isSelected && 'ring-2 ring-blue-500',
-      )}
-      style={textBoxStyle}
-      onClick={handleBoxClick}
-      onMouseDown={handleMouseDown}
-      title={isSelected ? "按住Shift拖动" : ""}
+      className="relative group"
+      style={baseBoxStyle}
     >
-      <div className="w-full h-full p-2 overflow-hidden">
-        {data.content}
+      <div
+        className={cn(
+          'box-element w-full h-full',
+          'group-hover:shadow-[0_0_0_2px_rgba(59,130,246,0.5)]',
+          isSelected && 'ring-2 ring-blue-500'
+        )}
+        style={{
+          backgroundColor: data.type === 'text' && data.style.hasBackground ? data.style.backgroundColor : 'transparent',
+          borderWidth: data.style.hasBorder ? `${data.style.borderWidth}px` : '0',
+          borderColor: data.style.hasBorder ? data.style.borderColor : 'transparent',
+          borderStyle: data.style.hasBorder ? 'solid' : 'none',
+          borderRadius: `${data.style.borderRadius}px`,
+          opacity: data.style.opacity,
+          boxShadow: data.style.shadow ? `0 4px 8px ${data.style.shadowColor || 'rgba(0,0,0,0.1)'}` : 'none',
+          cursor: isDragging ? 'grabbing' : (isShiftPressed ? 'grab' : 'default'),
+          overflow: 'hidden',
+          color: data.type === 'text' ? data.style.textColor : 'inherit',
+        }}
+        onClick={handleBoxClick}
+        onMouseDown={handleMouseDown}
+        title={isSelected ? "按住Shift拖动" : ""}
+      >
+        <div className="w-full h-full p-2 overflow-hidden">
+          {data.content}
+        </div>
       </div>
-      {renderResizeHandle()}
+      {renderResizeHandles()}
     </div>
   );
 };

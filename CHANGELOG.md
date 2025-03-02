@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Canvas display scaling for better editing experience
 - Added z-index support for boxes with automatic increment for new boxes
 - Added layer order controls (Move Forward/Backward) in box settings
+- Added text color support for text boxes
+- Added `hasBorder` property to control border visibility
+- Added `hasBackground` property to control background visibility
+- Added `textColor` property for text boxes
+- Added hover effect with blue outline for better box selection visibility
+- Added four corner resize handles for text boxes with hover reveal
+- Added smooth transition effects for box interactions
 
 ### Changed
 - Improved box dragging to require Shift key
@@ -34,6 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified box selection behavior to prevent selection while Shift key is pressed
 - Disabled text selection in boxes to improve dragging experience
 - Removed legacy editor (v1) and made the new editor the default
+- Modified default box styles:
+  - Border is now disabled by default
+  - Shadow is now disabled by default
+  - Background is now disabled by default for text boxes
+  - Removed background color support for image boxes
+- Updated box rendering to respect new style properties
 
 ### Fixed
 - Box resize handle now properly scales with display zoom

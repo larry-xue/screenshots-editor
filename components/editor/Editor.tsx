@@ -13,8 +13,11 @@ const DEFAULT_BOX_STYLE = {
   borderColor: '#e2e8f0',
   borderRadius: 8,
   opacity: 1,
-  shadow: true,
+  shadow: false,
   shadowColor: 'rgba(0,0,0,0.1)',
+  hasBorder: false,
+  hasBackground: false,
+  textColor: '#000000',
 };
 
 const DEFAULT_CANVAS_SETTINGS: CanvasSettings = {
@@ -241,7 +244,7 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           };
 
           // 使用html2canvas捕获画布
-          const canvas = await html2canvas(canvasRef.current, config);
+          const canvas = await html2canvas(canvasRef.current!, config);
 
           // 转换为blob
           const blob = await new Promise<Blob>((resolve) => {

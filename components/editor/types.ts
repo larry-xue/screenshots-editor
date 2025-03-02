@@ -26,6 +26,9 @@ export interface BoxStyle {
   opacity: number;
   shadow: boolean;
   shadowColor?: string;
+  hasBorder: boolean;
+  hasBackground: boolean;
+  textColor?: string;
 }
 
 export interface CanvasSettings {
