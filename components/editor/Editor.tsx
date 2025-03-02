@@ -2,11 +2,13 @@ import React, { useState, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import Canvas from './Canvas';
 import CanvasControls from './CanvasControls';
 import BoxControls from './BoxControls';
 import Loading from '@/components/ui/Loading';
 import { BoxData, CanvasSettings } from './types';
+import { Button } from '@/components/ui/button';
 
 const DEFAULT_BOX_STYLE = {
   backgroundColor: 'white',
@@ -336,19 +338,51 @@ const EditorV2: React.FC<EditorV2Props> = () => {
     }
   };
 
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+
   return (
-    <>
-      <div className="flex h-full overflow-hidden">
-        {/* Left sidebar for canvas controls */}
-        <div className="w-[300px] border-r bg-muted/30 overflow-y-auto">
-          <CanvasControls
-            settings={canvasSettings}
-            onSettingsChange={handleCanvasSettingChange}
-            onExport={handleExportCanvas}
-          />
+    <div className="flex flex-col h-full">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between px-4 h-14 border-b bg-background">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLeftPanelOpen(!leftPanelOpen)}
+          >
+            <ChevronLeft className={`h-4 w-4 transition-transform ${!leftPanelOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setRightPanelOpen(!rightPanelOpen)}
+          >
+            <ChevronRight className={`h-4 w-4 transition-transform ${!rightPanelOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Panel */}
+        <div 
+          className={`border-r bg-muted/30 overflow-hidden transition-all duration-300 ${
+            leftPanelOpen ? 'w-[300px]' : 'w-0'
+          }`}
+        >
+          <div className="w-[300px] h-full overflow-y-auto">
+            <CanvasControls
+              settings={canvasSettings}
+              onSettingsChange={handleCanvasSettingChange}
+              onExport={handleExportCanvas}
+            />
+          </div>
         </div>
 
-        {/* Main canvas area */}
+        {/* Main Canvas Area */}
         <div className="flex-1 overflow-auto relative bg-gray-100">
           <Canvas
             ref={canvasRef}
@@ -366,36 +400,42 @@ const EditorV2: React.FC<EditorV2Props> = () => {
           />
         </div>
 
-        {/* Right sidebar for box controls */}
-        <div className="w-[300px] border-l bg-muted/30 overflow-y-auto">
-          <BoxControls
-            selectedBox={selectedBox}
-            onAddTextBox={handleAddTextBox}
-            onAddImageBox={handleAddImageBox}
-            onDeleteBox={handleDeleteBox}
-            onStyleChange={handleBoxStyleChange}
-            onPropertyChange={handleBoxPropertyChange}
-            onContentChange={handleBoxContentChange}
-            onImageSettingsChange={handleImageSettingsChange}
-            boxes={boxes}
-          />
-
-          {/* Hidden file input for image upload */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
+        {/* Right Panel */}
+        <div 
+          className={`border-l bg-muted/30 overflow-hidden transition-all duration-300 ${
+            rightPanelOpen ? 'w-[300px]' : 'w-0'
+          }`}
+        >
+          <div className="w-[300px] h-full overflow-y-auto">
+            <BoxControls
+              selectedBox={selectedBox}
+              onAddTextBox={handleAddTextBox}
+              onAddImageBox={handleAddImageBox}
+              onDeleteBox={handleDeleteBox}
+              onStyleChange={handleBoxStyleChange}
+              onPropertyChange={handleBoxPropertyChange}
+              onContentChange={handleBoxContentChange}
+              onImageSettingsChange={handleImageSettingsChange}
+              boxes={boxes}
+            />
+          </div>
         </div>
+
+        {/* Hidden file input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
       </div>
 
       {/* Loading overlay */}
       {isExporting && (
         <Loading message="Exporting image..." />
       )}
-    </>
+    </div>
   );
 };
 
